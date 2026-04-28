@@ -2,7 +2,7 @@
  * Below are the colors that are used in the app. The colors are defined in the light and dark mode.
  */
 
-const tintColorLight = '#FF5A5F'; // Humanized Warm Coral/Red
+const tintColorLight = '#FF5A5F'; // Humanized Warm Corol/Red
 const tintColorDark = '#FF5A5F';
 
 export const Colors = {
