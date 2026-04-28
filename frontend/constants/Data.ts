@@ -172,3 +172,4 @@ export const RESTAURANTS = [
         ]
     }
 ];
+// Additional data for other restaurants can be added here following the same structure.
