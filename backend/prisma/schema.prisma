@@ -1,0 +1,105 @@
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+// Entities: User, Restaurant, MenuCategory, MenuItem, ModifierGroup, Order, OrderItem, Payment, Loyalty
+
+model User {
+  id          Int      @id @default(autoincrement())
+  email       String   @unique
+  password    String
+  name        String?
+  phone       String?
+  preferences String?
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+  orders             Order[]
+  
+  // Referral tracking
+  referralCode       String?  @unique
+  referredById       Int?
+  referredBy         User?    @relation("Referrals", fields: [referredById], references: [id])
+  referrals          User[]   @relation("Referrals")
+  availableDiscounts String?  // JSON string storing array of restaurant IDs where a discount is available e.g. "[1,2,3,4]"
+}
+
+model Restaurant {
+  id         Int            @id @default(autoincrement())
+  name       String
+  location   String
+  status     String         @default("OPEN")
+  openHours  String?
+  createdAt  DateTime       @default(now())
+  updatedAt  DateTime       @updatedAt
+  categories MenuCategory[]
+  orders     Order[]
+}
+
+model MenuCategory {
+  id           Int        @id @default(autoincrement())
+  restaurantId Int
+  name         String
+  sequence     Int        @default(0)
+  restaurant   Restaurant @relation(fields: [restaurantId], references: [id])
+  items        MenuItem[]
+}
+
+model MenuItem {
+  id             Int            @id @default(autoincrement())
+  categoryId     Int
+  name           String
+  description    String?
+  basePrice      Float
+  imageUrl       String?
+  category       MenuCategory   @relation(fields: [categoryId], references: [id])
+  modifierGroups ModifierGroup[]
+  orderItems     OrderItem[]
+}
+
+model ModifierGroup {
+  id            Int      @id @default(autoincrement())
+  itemId        Int
+  name          String
+  maxSelections Int      @default(1)
+  minSelections Int      @default(0)
+  item          MenuItem @relation(fields: [itemId], references: [id])
+}
+
+model Order {
+  id              Int         @id @default(autoincrement())
+  userId          Int
+  restaurantId    Int
+  totalAmount     Float
+  status          String      @default("PLACED") // PLACED, CONFIRMED, PREPARING, OUT_FOR_DELIVERY, ARRIVED
+  deliveryAddress String?
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+  user            User        @relation(fields: [userId], references: [id])
+  restaurant      Restaurant  @relation(fields: [restaurantId], references: [id])
+  items           OrderItem[]
+  payment         Payment?
+}
+
+model OrderItem {
+  id                   Int      @id @default(autoincrement())
+  orderId              Int
+  itemId               Int
+  quantity             Int
+  finalPrice           Float
+  appliedModifiersJson String?
+  order                Order    @relation(fields: [orderId], references: [id])
+  item                 MenuItem @relation(fields: [itemId], references: [id])
+}
+
+model Payment {
+  id           Int      @id @default(autoincrement())
+  orderId      Int      @unique
+  status       String   @default("PENDING")
+  gatewayToken String?
+  order        Order    @relation(fields: [orderId], references: [id])
+}
