@@ -1,135 +1,48 @@
-# 🥘 Coral Food — Food Ordering Platform
+# 🥘 SaffronEats — Premium Food Delivery Platform
 
-A production-grade, full-stack food ordering ecosystem built with React Native, Node.js, and a dedicated Admin Business Suite.
+The premium food ordering experience for Adama, built with Flutter and Supabase.
 
+## 🔑 Admin & Owner Credentials
+For testing purposes, please use the following accounts:
+
+Role	Email	Password
+Admin	admin@saffroneats.com	password123
+Kenbon Owner	kenbon@saffroneats.com	password123
+YegnawBet Owner	yegnawbet@saffroneats.com	password123
+Gola Owner	gola@saffroneats.com	password123
+Marafa Owner	marafa@saffroneats.com	password123
 ---
 
 ## 📸 Screenshots
 
-> _Replace these placeholders with your actual app screenshots._
+> _The app features a vibrant "Saffron Orange" aesthetic with dark mode support._
 
 | Customer App | Restaurant View | Cart & Checkout |
 |---|---|---|
-| ![Home](./screenshots/home.png) | ![Restaurant](./screenshots/restaurant.png) | ![Cart](./screenshots/cart.png) |
-
-| Admin — Dashboard | Admin — Menu Editor | Admin — Broadcasts |
-|---|---|---|
-| ![Dashboard](./screenshots/admin_dashboard.png) | ![Menu](./screenshots/admin_menu.png) | ![Broadcast](./screenshots/admin_broadcast.png) |
+| ![Home](https://raw.githubusercontent.com/flutter/flutter/master/docs/images/logo.png) | ![Restaurant](https://raw.githubusercontent.com/flutter/flutter/master/docs/images/logo.png) | ![Cart](https://raw.githubusercontent.com/flutter/flutter/master/docs/images/logo.png) |
 
 ---
 
-## 🧩 What Does It Do?
+## 🧩 Key Features
 
-This platform connects **customers**, **restaurant owners**, and the **system admin** through three unified applications:
+This platform connects **customers**, **restaurant owners**, and **superadmins** through a unified Flutter application:
 
-### 👤 Customer App (Mobile)
-- Browse restaurants by category (Meat, Fast Food, Meals)
-- View detailed menus, prices, and restaurant info
-- Add items to cart and place orders
-- Track order history in the Orders tab
-- Manage personal profile — address, notifications, payment methods
-- Earn referral codes and discounts on sign-up
+### 👤 Customer Features
+- **Smart Discovery**: Search restaurants or filter by category (Meat, Fast Food, Meals, Traditional).
+- **Interactive Menus**: Browse categorical menus with high-res photos and detailed descriptions.
+- **Dynamic Cart**: Real-time quantity management, tip selection, and order summary.
+- **Order Tracking**: Visual timeline for order status (Placed → Preparing → Delivering → Delivered).
+- **Profile Hub**: Manage addresses, VIP status, and referral codes.
 
-### 🏢 Admin Business Suite (Web)
-- Create and manage restaurant nodes (name, location, photo, description)
-- Edit full menus for each restaurant (item name, price, category)
-- Remove restaurants or menu items with a confirmation safeguard
-- Send global broadcast announcements to all app users
-- View network-wide metrics (total nodes, total items, growth)
+### 🏢 Restaurant Owner Hub
+- **Live Analytics**: Real-time revenue charts and growth metrics via `fl_chart`.
+- **Order Pipeline**: Monitor active orders and sales distribution.
+- **Menu Management**: Ability to add/edit menu items and restaurant details.
 
-### ⚙️ Backend API (Server)
-- JWT-based authentication (Sign Up / Sign In)
-- Restaurant discovery and search
-- Menu retrieval by restaurant
-- Order creation and tracking
-- User profile management
-
----
-
-## 🗂️ File Structure
-
-```
-Food Ordering App/
-│
-├── backend/                   # Node.js + Express API
-│   ├── prisma/
-│   │   ├── schema.prisma      # Database schema (User, Restaurant, Order, Menu)
-│   │   └── dev.db             # Local SQLite database (auto-generated)
-│   └── src/
-│       ├── index.ts           # Entry point — Express server setup
-│       └── routes/
-│           ├── auth.ts        # POST /auth/register, POST /auth/login
-│           ├── restaurants.ts # GET /restaurants, POST /restaurants, GET /menu/:id
-│           └── orders.ts      # POST /orders, GET /orders
-│
-├── frontend/                  # React Native (Expo Router)
-│   ├── app/
-│   │   ├── auth.tsx           # Sign In / Sign Up screen
-│   │   ├── cart.tsx           # Cart & Checkout screen
-│   │   ├── restaurant/[id].tsx# Restaurant detail + menu
-│   │   └── (tabs)/
-│   │       ├── index.tsx      # Home — Restaurant feed
-│   │       ├── orders.tsx     # Order history
-│   │       └── profile.tsx    # User profile & settings
-│   ├── store/
-│   │   ├── useAuthStore.ts    # JWT token + user state (Zustand)
-│   │   ├── useCartStore.ts    # Cart items (Zustand)
-│   │   ├── useOrderStore.ts   # Placed orders (Zustand)
-│   │   └── useRestaurantStore.ts # Restaurant data (Zustand)
-│   └── constants/
-│       ├── Colors.ts          # Brand color palette (Coral #FF5A5F)
-│       └── Data.ts            # Seed restaurant & menu data
-│
-└── admin/                     # React + Vite Business Suite
-    └── src/
-        ├── App.tsx            # Full Admin suite (Dashboard, Nodes, Menus, Broadcast)
-        └── index.css          # Tailwind CSS v4 imports
-```
-
----
-
-## 🚀 How to Run Locally
-
-You need **three terminal windows** open simultaneously.
-
-### Step 1 — Backend API
-
-```bash
-cd backend
-
-# First run only: initialize the database
-npx prisma db push
-npx prisma generate
-
-# Start the API server
-npx ts-node src/index.ts
-```
-
-> Runs on **http://localhost:3000**
-
----
-
-### Step 2 — Admin Business Suite
-
-```bash
-cd admin
-npm install   # First run only
-npm run dev
-```
-
-> Opens at **http://localhost:5173** (or next available port)
-
----
-
-### Step 3 — Customer Mobile App
-
-```bash
-cd frontend
-npm install   # First run only
-npm start
-```
-
-> Scan the **QR code** in your terminal using the **Expo Go** app on your phone.
+### ⚙️ Superadmin Control Panel
+- **Network Health**: Dashboard tracking total restaurants, users, and platform revenue.
+- **Partner Vetting**: Review and approve new restaurant applications.
+- **Node Management**: Oversight of all restaurant nodes in the network.
 
 ---
 
@@ -137,39 +50,95 @@ npm start
 
 | Layer | Technology |
 |---|---|
-| Mobile App | React Native, Expo, Expo Router |
-| State | Zustand + AsyncStorage |
-| Admin Web | React, Vite, Tailwind CSS v4 |
-| Backend | Node.js, Express |
-| ORM | Prisma v5 |
-| Database | SQLite (dev) |
-| Auth | JWT + bcrypt |
+| **Mobile App** | Flutter (Native Android/iOS/Linux) |
+| **State Management** | Provider (ChangeNotifier) |
+| **Navigation** | Go Router (Typed Routing) |
+| **Backend** | Supabase (PostgreSQL + Auth + Storage) |
+| **Storage** | shared_preferences (Local Persistence) |
+| **Animations** | flutter_animate |
+| **UI Kit** | Material 3 + Google Fonts (Outfit & Inter) |
 
 ---
 
-## 🔍 Inspect the Database
+## 🗂️ File Structure
 
-To view database tables (users, restaurants, orders) in a visual UI:
-
-```bash
-cd backend
-npx prisma studio
+```
+lib/
+├── main.dart + app.dart          # Entry point & App Routing
+├── core/
+│   └── constants/                # Colors, Theme, Mock Data
+├── models/                       # Data Models (User, Restaurant, Order, etc.)
+├── providers/                    # State Providers (Auth, Cart, Restaurant)
+├── widgets/                      # Reusable UI Components
+└── screens/
+    ├── auth/                     # Unified Auth & Registration
+    ├── customer/                 # Home, Detail, Cart, Orders, Profile
+    ├── owner/                    # Dashboard & Partner Application
+    └── superadmin/               # Control Panel
 ```
 
-Opens Prisma Studio at **http://localhost:5555**
+---
+
+## 🚀 How to Run Locally
+
+### 1. Install Flutter
+If you don't have Flutter installed, follow the [official guide](https://docs.flutter.dev/get-started/install) or use these Linux commands:
+```bash
+sudo snap install flutter --classic
+flutter doctor
+```
+
+### 2. Setup the Project
+```bash
+cd "Food Ordering App"
+flutter create .
+flutter pub get
+```
+
+### 3. Run on Desktop/Web
+```bash
+flutter run -d linux   # Run as native desktop app
+flutter run -d chrome  # Run in browser
+```
 
 ---
 
-## 🌐 Environment
+## 📱 How to Run on Your Phone
 
-The backend API URL is set in `frontend/utils/api.ts`. Update the base URL if deploying to a remote server:
+### **Android Instructions**
+1. **Enable Developer Options**: Go to `Settings` > `About Phone` > Tap `Build Number` 7 times.
+2. **Enable USB Debugging**: In `Settings` > `System` > `Developer Options`, toggle **USB Debugging** to ON.
+3. **Connect Phone**: Plug your phone into your computer via USB.
+4. **Select Device**: 
+   ```bash
+   flutter devices
+   ```
+   Confirm your phone appears in the list.
+5. **Launch App**:
+   ```bash
+   flutter run
+   ```
 
-```ts
-const BASE_URL = 'http://localhost:3000';
+### **iOS Instructions (macOS only)**
+1. Install **Xcode** from the App Store.
+2. Open the project and run `open ios/Runner.xcworkspace`.
+3. Select your physical iPhone as the build target.
+4. Run `flutter run` in the terminal.
+
+---
+
+## 🌐 Supabase Integration
+
+To use the live backend, update your credentials in `lib/main.dart`:
+```dart
+await Supabase.initialize(
+  url: 'YOUR_SUPABASE_URL',
+  anonKey: 'YOUR_SUPABASE_ANON_KEY',
+);
 ```
 
 ---
 
 ## 📄 License
 
-Private project — All rights reserved © 2025 Coral Food.
+Private project — All rights reserved © 2025 SaffronEats.
