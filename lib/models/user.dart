@@ -4,6 +4,7 @@ class AppUser {
   final String email;
   final String role; // 'customer' | 'restaurant' | 'superadmin'
   final String? address;
+  final String? phone;
   final String? avatarUrl;
   final String? referralCode;
   final List<int> availableDiscounts;
@@ -16,6 +17,7 @@ class AppUser {
     required this.email,
     this.role = 'customer',
     this.address,
+    this.phone,
     this.avatarUrl,
     this.referralCode,
     this.availableDiscounts = const [],
@@ -29,6 +31,7 @@ class AppUser {
     String? email,
     String? role,
     String? address,
+    String? phone,
     String? avatarUrl,
     String? referralCode,
     List<int>? availableDiscounts,
@@ -41,6 +44,7 @@ class AppUser {
         email: email ?? this.email,
         role: role ?? this.role,
         address: address ?? this.address,
+        phone: phone ?? this.phone,
         avatarUrl: avatarUrl ?? this.avatarUrl,
         referralCode: referralCode ?? this.referralCode,
         availableDiscounts: availableDiscounts ?? this.availableDiscounts,
@@ -54,6 +58,7 @@ class AppUser {
         'email': email,
         'role': role,
         'address': address,
+        'phone': phone,
         'avatarUrl': avatarUrl,
         'referralCode': referralCode,
         'availableDiscounts': availableDiscounts,
@@ -67,6 +72,7 @@ class AppUser {
         email: json['email'] as String? ?? '',
         role: json['role'] as String? ?? 'customer',
         address: json['address'] as String?,
+        phone: json['phone'] as String?,
         avatarUrl: json['avatar_url'] as String?,
         referralCode: json['referral_code'] as String?,
         availableDiscounts: json['availableDiscounts'] != null

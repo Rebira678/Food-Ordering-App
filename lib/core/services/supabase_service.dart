@@ -30,7 +30,7 @@ class SupabaseService {
               name: item['name'],
               description: item['description'] ?? '',
               price: (item['price'] as num).toDouble(),
-              image: item['image_url'] ?? '',
+              image: _fixImageUrl(item['image_url']),
               restaurantId: r['id'].toString(),
               restaurantName: r['name'],
             )).toList(),
@@ -47,7 +47,7 @@ class SupabaseService {
           reviews: 'New',
           time: r['time'] ?? '30 min',
           deliveryFee: (r['delivery_fee'] as num?)?.toDouble() ?? 0.0,
-          image: r['image_url'] ?? '',
+          image: _fixImageUrl(r['image_url']),
           tags: List<String>.from(r['tags'] ?? []),
           description: r['description'] ?? '',
           categories: categories.cast<MenuCategory>(),
@@ -57,5 +57,17 @@ class SupabaseService {
       debugPrint('❌ ERROR FETCHING RESTAURANTS: $e');
       return [];
     }
+  }
+
+  /// Append proper Unsplash params so images load on web & mobile.
+  /// Falls back to a reliable food photo placeholder if URL is empty.
+  static String _fixImageUrl(dynamic raw) {
+    const fallback = 'https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=800&q=80&auto=format&fit=crop';
+    if (raw == null || raw.toString().isEmpty) return fallback;
+    final url = raw.toString().trim();
+    if (url.contains('unsplash.com') && !url.contains('?')) {
+      return '$url?w=800&q=80&auto=format&fit=crop';
+    }
+    return url;
   }
 }

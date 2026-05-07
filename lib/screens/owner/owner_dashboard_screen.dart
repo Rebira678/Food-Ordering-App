@@ -75,7 +75,7 @@ class _OwnerDashboardScreenState extends State<OwnerDashboardScreen>
     // 3. Setup realtime listener
     _supabase.channel('owner_orders_${_restaurantId}')
         .onPostgresChanges(
-          event: PostgresChangeEvent.insert,
+          event: PostgresChangeEvent.all,
           schema: 'public',
           table: 'orders',
           filter: PostgresChangeFilter(
@@ -83,9 +83,9 @@ class _OwnerDashboardScreenState extends State<OwnerDashboardScreen>
             column: 'restaurant_id',
             value: _restaurantId!,
           ),
-          callback: (_) {
+          callback: (payload) {
             _fetchOrders();
-            if (mounted) {
+            if (payload.eventType == PostgresChangeEvent.insert && mounted) {
               ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
                 content: Text('🔔 NEW ORDER RECEIVED!'),
                 backgroundColor: AppColors.primary,
@@ -107,22 +107,40 @@ class _OwnerDashboardScreenState extends State<OwnerDashboardScreen>
 
       final allOrders = await _supabase
           .from('orders')
-          .select('*, profiles(full_name, phone), order_items(quantity, unit_price, menu_items(name))')
+          .select('*, order_items(quantity, unit_price, menu_items(name))')
           .eq('restaurant_id', _restaurantId!)
           .order('created_at', ascending: false);
 
-      double revenue = 0;
-      int todayCount = 0;
-      for (final o in allOrders) {
-        revenue += (o['total_amount'] as num?)?.toDouble() ?? 0;
-        if (o['created_at'] != null && o['created_at'].toString().compareTo(startOfDay) >= 0) {
-          todayCount++;
+      // Manually fetch profiles since orders table references auth.users instead of public.profiles
+      final userIds = allOrders.map((o) => o['user_id']).where((id) => id != null).toSet().toList();
+      final Map<String, dynamic> profilesMap = {};
+      if (userIds.isNotEmpty) {
+        final profilesRes = await _supabase.from('profiles').select('id, full_name, phone').inFilter('id', userIds);
+        for (final p in profilesRes) {
+          profilesMap[p['id']] = p;
         }
       }
 
+      // Inject profiles into orders and calculate stats
+      final List<Map<String, dynamic>> enrichedOrders = [];
+      double revenue = 0;
+      int todayCount = 0;
+      
+      for (final o in allOrders) {
+        final orderCopy = Map<String, dynamic>.from(o);
+        orderCopy['profiles'] = profilesMap[orderCopy['user_id']];
+        
+        revenue += (orderCopy['total_amount'] as num?)?.toDouble() ?? 0;
+        if (orderCopy['created_at'] != null && orderCopy['created_at'].toString().compareTo(startOfDay) >= 0) {
+          todayCount++;
+        }
+        
+        enrichedOrders.add(orderCopy);
+      }
+
       setState(() {
-        _liveOrders = List<Map<String, dynamic>>.from(allOrders);
-        _totalOrders = allOrders.length;
+        _liveOrders = enrichedOrders;
+        _totalOrders = enrichedOrders.length;
         _totalRevenue = revenue;
         _todayOrders = todayCount;
       });

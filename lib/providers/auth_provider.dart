@@ -77,7 +77,10 @@ class AuthProvider extends ChangeNotifier {
     _lastErrorMessage = null;
     notifyListeners();
     try {
-      await _supabase.auth.signInWithPassword(email: email, password: password);
+      final res = await _supabase.auth.signInWithPassword(email: email, password: password);
+      if (res.user != null) {
+        await _fetchProfile(res.user!.id);
+      }
       return true;
     } catch (e) {
       _lastErrorMessage = _humanizeError(e);
@@ -167,6 +170,7 @@ class AuthProvider extends ChangeNotifier {
         await _supabase.from('profiles').update({
           'full_name': updatedUser.name,
           'address': updatedUser.address,
+          'phone': updatedUser.phone,
           'avatar_url': updatedUser.avatarUrl,
           'push_enabled': updatedUser.pushEnabled,
           'email_enabled': updatedUser.emailEnabled,

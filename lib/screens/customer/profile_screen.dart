@@ -18,6 +18,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   String _activeSection = '';
   final _nameCtrl = TextEditingController();
   final _emailCtrl = TextEditingController();
+  final _phoneCtrl = TextEditingController();
   final _addressCtrl = TextEditingController();
   bool _pushEnabled = true;
   bool _emailPromos = false;
@@ -42,6 +43,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     final user = context.read<AuthProvider>().user;
     _nameCtrl.text = user?.name ?? '';
     _emailCtrl.text = user?.email ?? '';
+    _phoneCtrl.text = user?.phone ?? '';
     _addressCtrl.text = user?.address ?? '';
     _pushEnabled = user?.pushEnabled ?? true;
     _emailPromos = user?.emailEnabled ?? false;
@@ -56,6 +58,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   void dispose() {
     _nameCtrl.dispose();
     _emailCtrl.dispose();
+    _phoneCtrl.dispose();
     _addressCtrl.dispose();
     super.dispose();
   }
@@ -65,6 +68,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     await auth.updateUser(auth.user!.copyWith(
       name: _nameCtrl.text.trim(),
       email: _emailCtrl.text.trim(),
+      phone: _phoneCtrl.text.trim().isEmpty ? null : _phoneCtrl.text.trim(),
       address: _addressCtrl.text.trim(),
       avatarUrl: _avatarOptions[_selectedAvatarIdx],
     ));
@@ -168,6 +172,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   const SizedBox(height: 12),
                   Text(user?.name ?? 'Guest User', style: theme.textTheme.headlineMedium),
                   Text(user?.email ?? '', style: theme.textTheme.bodySmall),
+                  if (user?.phone != null && user!.phone!.isNotEmpty) ...[
+                    const SizedBox(height: 4),
+                    Text('📞 ${user.phone}', style: GoogleFonts.inter(color: AppColors.primary, fontWeight: FontWeight.w600)),
+                  ],
                   if (user?.address != null) ...[
                     const SizedBox(height: 4),
                     Text('📍 ${user!.address}', style: GoogleFonts.inter(color: AppColors.primary, fontWeight: FontWeight.w600)),
@@ -253,9 +261,18 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 _accordion('Profile', '👤', 'Manage Information', Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    TextField(controller: _nameCtrl, decoration: const InputDecoration(hintText: 'Full Name')),
+                    TextField(controller: _nameCtrl, decoration: const InputDecoration(hintText: 'Full Name', prefixIcon: Icon(Icons.person_outline))),
                     const SizedBox(height: 12),
-                    TextField(controller: _emailCtrl, decoration: const InputDecoration(hintText: 'Email')),
+                    TextField(controller: _emailCtrl, decoration: const InputDecoration(hintText: 'Email', prefixIcon: Icon(Icons.email_outlined))),
+                    const SizedBox(height: 12),
+                    TextField(
+                      controller: _phoneCtrl,
+                      keyboardType: TextInputType.phone,
+                      decoration: const InputDecoration(
+                        hintText: 'Phone Number (e.g. +251912345678)',
+                        prefixIcon: Icon(Icons.phone_outlined),
+                      ),
+                    ),
                     const SizedBox(height: 12),
                     ElevatedButton(onPressed: _saveProfile, child: const Text('Save Profile Data')),
                   ],

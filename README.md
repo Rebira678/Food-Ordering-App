@@ -5,12 +5,12 @@ The premium food ordering experience for Adama, built with Flutter and Supabase.
 ## 🔑 Admin & Owner Credentials
 For testing purposes, please use the following accounts:
 
-Role	Email	Password
-Admin	admin@saffroneats.com	password123
-Kenbon Owner	kenbon@saffroneats.com	password123
-YegnawBet Owner	yegnawbet@saffroneats.com	password123
-Gola Owner	gola@saffroneats.com	password123
-Marafa Owner	marafa@saffroneats.com	password123
+Role	                    Email	                        Password
+Admin	               admin@saffroneats.com	           password123
+Kenbon Owner	      kenbon@saffroneats.com             password123
+YegnawBet Owner	   yegnawbet@saffroneats.com	        password123
+Gola Owner        	gola@saffroneats.com	              password123
+Marafa Owner	      marafa@saffroneats.com	           password123
 ---
 
 ## 📸 Screenshots

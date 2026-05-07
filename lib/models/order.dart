@@ -48,7 +48,7 @@ class Order {
       items: [], // Items are fetched separately usually
       total: (json['total_amount'] as num).toDouble(),
       tip: 0, // Tip not in DB schema yet, could add later
-      status: _parseStatus(json['status'] as String),
+      status: parseStatus(json['status'] as String),
       date: json['created_at'] as String,
       restaurantName: (json['restaurants'] != null) ? json['restaurants']['name'] as String : 'Unknown',
       paymentImageUrl: json['payment_image_url'] as String?,
@@ -56,7 +56,7 @@ class Order {
     );
   }
 
-  static OrderStatus _parseStatus(String s) {
+  static OrderStatus parseStatus(String s) {
     switch (s) {
       case 'pending': return OrderStatus.placed;
       case 'preparing': return OrderStatus.preparing;

@@ -3,14 +3,13 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
+import 'package:image_picker/image_picker.dart';
 import '../../providers/cart_provider.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/order_provider.dart';
 import '../../models/order.dart';
 import '../../models/cart_item.dart';
 import '../../core/constants/app_colors.dart';
-import 'dart:io';
-import 'package:path/path.dart' as p;
 import '../../core/services/image_service.dart';
 
 class CartScreen extends StatefulWidget {
@@ -26,8 +25,8 @@ class _CartScreenState extends State<CartScreen> {
   final _newAddressCtrl = TextEditingController();
   double _tip = 0;
   
-  // Track files for each restaurant to allow separate payments
-  final Map<String, File?> _paymentFiles = {};
+  // Track XFile for each restaurant to allow separate payments (works on web + mobile)
+  final Map<String, XFile?> _paymentFiles = {};
   final Map<String, bool> _uploadingStatus = {};
 
   @override
@@ -165,9 +164,9 @@ class _CartScreenState extends State<CartScreen> {
   }
 
   void _pickPaymentImage(String restaurantId) async {
-    final file = await ImageService.pickImage();
-    if (file != null) {
-      setState(() => _paymentFiles[restaurantId] = file);
+    final xfile = await ImageService.pickImage();
+    if (xfile != null) {
+      setState(() => _paymentFiles[restaurantId] = xfile as XFile);
     }
   }
 
@@ -307,9 +306,9 @@ class _CartScreenState extends State<CartScreen> {
                                   child: Center(
                                     child: _uploadingStatus[restId] == true
                                       ? const CircularProgressIndicator()
-                                      : Text(
+                                       : Text(
                                           _paymentFiles[restId] != null 
-                                            ? '✅ Receipt: ${p.basename(_paymentFiles[restId]!.path)}'
+                                            ? '✅ Receipt: ${_paymentFiles[restId]!.name}'
                                             : '📤 Upload Screenshot',
                                           style: TextStyle(color: _paymentFiles[restId] != null ? AppColors.success : AppColors.primary),
                                         ),

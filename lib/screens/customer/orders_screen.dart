@@ -5,8 +5,20 @@ import '../../providers/order_provider.dart';
 import '../../core/constants/app_colors.dart';
 import '../../widgets/order_timeline.dart';
 
+import '../../models/order.dart';
+
 class OrdersScreen extends StatelessWidget {
   const OrdersScreen({super.key});
+
+  String _getStatusMessage(OrderStatus status) {
+    switch (status) {
+      case OrderStatus.placed: return 'Your order has been received by the restaurant.';
+      case OrderStatus.preparing: return 'Chef is currently preparing your meal.';
+      case OrderStatus.delivering: return 'Your food is on the way! Please confirm when received.';
+      case OrderStatus.delivered: return 'Order has been delivered. Enjoy your meal!';
+      case OrderStatus.cancelled: return 'This order was cancelled.';
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -59,7 +71,7 @@ class OrdersScreen extends StatelessWidget {
                             Text(order.restaurantName, style: theme.textTheme.titleMedium),
                             const SizedBox(height: 4),
                             Text(
-                              'Order #${order.id} • ${order.items.length} items • ETB ${order.grandTotal.toStringAsFixed(2)}',
+                              'Order #${order.id.length > 8 ? order.id.substring(0, 8).toUpperCase() : order.id.toUpperCase()} • ${order.items.length} items • ETB ${order.grandTotal.toStringAsFixed(2)}',
                               style: theme.textTheme.bodySmall,
                             ),
                             const SizedBox(height: 12),
@@ -80,6 +92,7 @@ class OrdersScreen extends StatelessWidget {
                             const SizedBox(height: 16),
                             Container(
                               padding: const EdgeInsets.all(16),
+                              width: double.infinity,
                               decoration: BoxDecoration(
                                 color: AppColors.primary.withOpacity(0.08),
                                 borderRadius: BorderRadius.circular(12),
@@ -89,14 +102,30 @@ class OrdersScreen extends StatelessWidget {
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   Text(
-                                    'Arriving at ${order.date}',
+                                    'Ordered at ${order.date.split('T').first}',
                                     style: GoogleFonts.outfit(color: AppColors.primary, fontWeight: FontWeight.w700, fontSize: 16),
                                   ),
                                   const SizedBox(height: 4),
-                                  Text('Chef is currently preparing your meal.', style: theme.textTheme.bodySmall),
+                                  Text(_getStatusMessage(order.status), style: theme.textTheme.bodySmall),
                                 ],
                               ),
                             ),
+                            if (order.status == OrderStatus.delivering) ...[
+                              const SizedBox(height: 16),
+                              SizedBox(
+                                width: double.infinity,
+                                child: ElevatedButton(
+                                  onPressed: () {
+                                    context.read<OrderProvider>().updateOrderStatus(order.id, 'delivered');
+                                  },
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: AppColors.success,
+                                    padding: const EdgeInsets.symmetric(vertical: 14),
+                                  ),
+                                  child: const Text('Confirm Received / I have eaten', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                                ),
+                              ),
+                            ],
                           ],
                         ),
                       );
