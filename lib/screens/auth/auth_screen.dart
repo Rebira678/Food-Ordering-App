@@ -89,7 +89,16 @@ class _AuthScreenState extends State<AuthScreen> {
           context.go('/');
         }
       } else {
-        _snack(auth.lastErrorMessage ?? (_isSignUp ? 'Sign up failed.' : 'Sign in failed.'));
+        final errMsg = auth.lastErrorMessage ?? '';
+        final isCredentialError = errMsg.toLowerCase().contains('invalid') ||
+            errMsg.toLowerCase().contains('credentials') ||
+            errMsg.toLowerCase().contains('password') ||
+            errMsg.toLowerCase().contains('not found');
+        if (!_isSignUp && isCredentialError) {
+          _snack('Incorrect email or password. New here? Tap "Sign Up" below.');
+        } else {
+          _snack(errMsg.isNotEmpty ? errMsg : (_isSignUp ? 'Sign up failed. Try again.' : 'Sign in failed. Please check your credentials.'));
+        }
       }
     }
   }
@@ -232,7 +241,7 @@ class _AuthScreenState extends State<AuthScreen> {
           // Right panel — form side
           Container(
             width: 480,
-            color: const Color(0xFF13161E),
+            color: const Color(0xFF080A0F),
             child: Center(
               child: SingleChildScrollView(
                 padding: const EdgeInsets.symmetric(horizontal: 48, vertical: 40),

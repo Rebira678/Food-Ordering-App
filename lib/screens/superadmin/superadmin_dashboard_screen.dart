@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -5,6 +6,7 @@ import 'package:provider/provider.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../providers/auth_provider.dart';
 import '../../core/constants/app_colors.dart';
+import '../../core/constants/web_theme.dart';
 
 class SuperadminDashboardScreen extends StatefulWidget {
   const SuperadminDashboardScreen({super.key});
@@ -140,7 +142,12 @@ class _SuperadminDashboardScreenState extends State<SuperadminDashboardScreen>
 
   void _showSnack(String msg) {
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(msg), behavior: SnackBarBehavior.floating),
+      SnackBar(
+        content: Text(msg),
+        behavior: SnackBarBehavior.floating,
+        width: kIsWeb ? 400 : null,
+        shape: kIsWeb ? RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)) : null,
+      ),
     );
   }
 
@@ -200,6 +207,10 @@ class _SuperadminDashboardScreenState extends State<SuperadminDashboardScreen>
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final isWideWeb = kIsWeb && MediaQuery.of(context).size.width >= 900;
+    
+    if (isWideWeb) return _buildWebLayout(context, theme);
+
     return Scaffold(
       backgroundColor: theme.scaffoldBackgroundColor,
       floatingActionButton: _tabController.index == 1 ? FloatingActionButton.extended(
@@ -228,6 +239,408 @@ class _SuperadminDashboardScreenState extends State<SuperadminDashboardScreen>
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  // ── WEB LAYOUT ─────────────────────────────────────────────────────────────
+  Widget _buildWebLayout(BuildContext context, ThemeData theme) {
+    final navItems = [
+      (Icons.dashboard_rounded, 'Overview', 0),
+      (Icons.store_rounded, 'Restaurants', 1),
+      (Icons.assignment_rounded, 'Applications', 2),
+      (Icons.receipt_long_rounded, 'Orders', 3),
+    ];
+    final pendingApps = _stats['pending_apps'] ?? 0;
+
+    return Scaffold(
+      backgroundColor: WebColors.bg,
+      body: Row(
+        children: [
+          // ── Sidebar ──
+          Container(
+            width: 240,
+            color: WebColors.surfaceElevated,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Logo
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(24, 32, 24, 8),
+                  child: Row(
+                    children: [
+                      Container(
+                        width: 36, height: 36,
+                        decoration: BoxDecoration(gradient: const LinearGradient(colors: [AppColors.primary, Color(0xFFFF8C42)]), borderRadius: BorderRadius.circular(10)),
+                        child: const Icon(Icons.admin_panel_settings_rounded, color: Colors.white, size: 20),
+                      ),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: Text('Control Panel', style: GoogleFonts.outfit(fontSize: 16, fontWeight: FontWeight.w900, color: Colors.white)),
+                      ),
+                    ],
+                  ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(24, 4, 24, 24),
+                  child: Text('Platform Administrator', style: GoogleFonts.inter(fontSize: 12, color: WebColors.textMuted)),
+                ),
+                const Divider(color: WebColors.border, height: 1),
+                const SizedBox(height: 16),
+                // Nav
+                ...navItems.map((item) {
+                  final isActive = _tabController.index == item.$3;
+                  return GestureDetector(
+                    onTap: () => setState(() => _tabController.animateTo(item.$3)),
+                    child: AnimatedContainer(
+                      duration: const Duration(milliseconds: 150),
+                      margin: const EdgeInsets.fromLTRB(12, 2, 12, 2),
+                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                      decoration: BoxDecoration(
+                        color: isActive ? AppColors.primary.withOpacity(0.12) : Colors.transparent,
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: Row(
+                        children: [
+                          Icon(item.$1, size: 18, color: isActive ? AppColors.primary : WebColors.textSecondary),
+                          const SizedBox(width: 12),
+                          Text(item.$2,
+                              style: GoogleFonts.outfit(
+                                fontSize: 14,
+                                fontWeight: isActive ? FontWeight.w700 : FontWeight.w500,
+                                color: isActive ? AppColors.primary : WebColors.textSecondary,
+                              )),
+                          if (item.$3 == 2 && pendingApps > 0) ...[  
+                            const Spacer(),
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
+                              decoration: BoxDecoration(color: Colors.amber, borderRadius: BorderRadius.circular(10)),
+                              child: Text(
+                                '$pendingApps',
+                                style: GoogleFonts.inter(color: Colors.black, fontSize: 11, fontWeight: FontWeight.w800),
+                              ),
+                            ),
+                          ],
+                        ],
+                      ),
+                    ),
+                  );
+                }),
+                const Spacer(),
+                const Divider(color: WebColors.border, height: 1),
+                ListTile(
+                  leading: const Icon(Icons.refresh_rounded, color: WebColors.textSecondary, size: 18),
+                  title: Text('Refresh', style: GoogleFonts.inter(color: WebColors.textSecondary, fontSize: 13)),
+                  onTap: _loadAllData,
+                  dense: true,
+                ),
+                ListTile(
+                  leading: const Icon(Icons.logout_rounded, color: Colors.redAccent, size: 18),
+                  title: Text('Sign Out', style: GoogleFonts.inter(color: Colors.redAccent, fontSize: 13)),
+                  onTap: () { context.read<AuthProvider>().logout(); context.go('/auth'); },
+                  dense: true,
+                ),
+                const SizedBox(height: 16),
+              ],
+            ),
+          ),
+          // ── Main Content ──
+          Expanded(
+            child: Column(
+              children: [
+                // Top bar
+                Container(
+                  height: 64,
+                  padding: const EdgeInsets.symmetric(horizontal: 32),
+                  decoration: const BoxDecoration(
+                    color: WebColors.surface,
+                    border: Border(bottom: BorderSide(color: WebColors.border)),
+                  ),
+                  child: Row(
+                    children: [
+                      Text(navItems[_tabController.index].$2, style: WebText.h2()),
+                      const Spacer(),
+                      if (_tabController.index == 1)
+                        SizedBox(
+                          width: 160,
+                          height: 40,
+                          child: PremiumButton(
+                            label: 'Add Restaurant',
+                            icon: Icons.add_rounded,
+                            onPressed: _showAddRestaurantDialog,
+                          ),
+                        ),
+                    ],
+                  ),
+                ),
+                // Content
+                Expanded(
+                  child: _isLoading
+                      ? const Center(child: CircularProgressIndicator(color: AppColors.primary))
+                      : SingleChildScrollView(
+                          padding: const EdgeInsets.all(32),
+                          child: ConstrainedBox(
+                            constraints: const BoxConstraints(maxWidth: 1000),
+                            child: _getWebTabContent(theme),
+                          ),
+                        ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _getWebTabContent(ThemeData theme) {
+    switch (_tabController.index) {
+      case 0:
+        return _buildWebOverview();
+      case 1:
+        return _buildWebRestaurants();
+      case 2:
+        return _buildWebApplications();
+      case 3:
+        return _buildWebOrders();
+      default:
+        return const SizedBox();
+    }
+  }
+
+  Widget _buildWebOverview() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            WebStatCard(label: 'Restaurants', value: '${_stats['restaurants'] ?? 0}', icon: Icons.store_rounded, accentColor: AppColors.primary),
+            const SizedBox(width: 16),
+            WebStatCard(label: 'Total Orders', value: '${_stats['orders'] ?? 0}', icon: Icons.receipt_long_rounded, accentColor: AppColors.success),
+            const SizedBox(width: 16),
+            WebStatCard(label: 'Customers', value: '${_stats['customers'] ?? 0}', icon: Icons.people_rounded, accentColor: const Color(0xFF6366F1)),
+            const SizedBox(width: 16),
+            WebStatCard(label: 'Revenue', value: 'ETB ${((_stats['revenue'] ?? 0.0) as double).toStringAsFixed(0)}', icon: Icons.payments_rounded, accentColor: const Color(0xFFF59E0B)),
+          ],
+        ),
+        const SizedBox(height: 32),
+        if ((_stats['pending_apps'] ?? 0) > 0) ...[
+          Container(
+            padding: const EdgeInsets.all(24),
+            decoration: BoxDecoration(
+              color: Colors.amber.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: Colors.amber.withOpacity(0.3)),
+            ),
+            child: Row(
+              children: [
+                const Icon(Icons.warning_amber_rounded, color: Colors.amber, size: 32),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text('${_stats['pending_apps']} Pending Application(s)', style: WebText.h2(color: Colors.amber)),
+                      const SizedBox(height: 4),
+                      Text('There are new restaurant partner applications waiting for your review.', style: WebText.body(color: Colors.amber.withOpacity(0.8))),
+                    ],
+                  ),
+                ),
+                PremiumButton(
+                  label: 'Review Now',
+                  color: Colors.amber,
+                  onPressed: () => setState(() => _tabController.animateTo(2)),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 32),
+        ],
+      ],
+    );
+  }
+
+  Widget _buildWebRestaurants() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: _restaurants.map((r) {
+        final isActive = r['is_active'] as bool? ?? true;
+        return Container(
+          margin: const EdgeInsets.only(bottom: 16),
+          padding: const EdgeInsets.all(24),
+          decoration: BoxDecoration(
+            color: WebColors.surface,
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: isActive ? WebColors.border : Colors.red.withOpacity(0.3)),
+          ),
+          child: Row(
+            children: [
+              Container(
+                width: 60, height: 60,
+                decoration: BoxDecoration(color: AppColors.primary.withOpacity(0.1), borderRadius: BorderRadius.circular(12)),
+                child: const Icon(Icons.store_rounded, color: AppColors.primary, size: 28),
+              ),
+              const SizedBox(width: 24),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Text(r['name'] ?? 'Unknown', style: WebText.h2()),
+                        const SizedBox(width: 12),
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                          decoration: BoxDecoration(color: (isActive ? AppColors.success : Colors.red).withOpacity(0.1), borderRadius: BorderRadius.circular(8)),
+                          child: Text(isActive ? 'ACTIVE' : 'INACTIVE', style: WebText.label(color: isActive ? AppColors.success : Colors.red)),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 8),
+                    Text('📍 ${r['address'] ?? 'No address'} | ⭐ ${r['rating'] ?? 'N/A'}', style: WebText.caption()),
+                  ],
+                ),
+              ),
+              SizedBox(
+                width: 140,
+                child: PremiumButton(
+                  label: isActive ? 'Deactivate' : 'Activate',
+                  color: isActive ? Colors.red : AppColors.success,
+                  outlined: true,
+                  onPressed: () => _toggleRestaurantStatus(r['id'], isActive),
+                ),
+              ),
+            ],
+          ),
+        );
+      }).toList(),
+    );
+  }
+
+  Widget _buildWebApplications() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: _applications.map((app) {
+        final status = app['status'] as String? ?? 'pending';
+        final isPending = status == 'pending';
+        return Container(
+          margin: const EdgeInsets.only(bottom: 16),
+          padding: const EdgeInsets.all(24),
+          decoration: BoxDecoration(
+            color: WebColors.surface,
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: isPending ? Colors.amber.withOpacity(0.5) : WebColors.border),
+          ),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Text(app['restaurant_name'] ?? 'Unknown', style: WebText.h2()),
+                        const SizedBox(width: 12),
+                        _statusBadge(status),
+                      ],
+                    ),
+                    const SizedBox(height: 16),
+                    Text('📍 ${app['location']}', style: WebText.body()),
+                    Text('🍴 Cuisine: ${app['cuisine_type']}', style: WebText.body()),
+                    Text('📧 ${app['email']}', style: WebText.body()),
+                    Text('📞 ${app['phone']}', style: WebText.body()),
+                    if (app['description'] != null && app['description'].toString().isNotEmpty) ...[
+                      const SizedBox(height: 12),
+                      Container(
+                        padding: const EdgeInsets.all(16),
+                        decoration: BoxDecoration(color: WebColors.surfaceElevated, borderRadius: BorderRadius.circular(10)),
+                        child: Text(app['description'], style: WebText.body()),
+                      ),
+                    ],
+                  ],
+                ),
+              ),
+              if (isPending) ...[
+                const SizedBox(width: 24),
+                Column(
+                  children: [
+                    SizedBox(
+                      width: 120,
+                      child: PremiumButton(
+                        label: 'Approve',
+                        color: AppColors.success,
+                        onPressed: () => _showConfirmDialog(
+                          'Approve Application',
+                          'Approve application from "${app['restaurant_name']}"?',
+                          () => _updateApplicationStatus(app['id'], 'approved'),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    SizedBox(
+                      width: 120,
+                      child: PremiumButton(
+                        label: 'Reject',
+                        color: Colors.red,
+                        outlined: true,
+                        onPressed: () => _showConfirmDialog(
+                          'Reject Application',
+                          'Reject application from "${app['restaurant_name']}"?',
+                          () => _updateApplicationStatus(app['id'], 'rejected'),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ],
+          ),
+        );
+      }).toList(),
+    );
+  }
+
+  Widget _buildWebOrders() {
+    return Container(
+      decoration: BoxDecoration(
+        color: WebColors.surface,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: WebColors.border),
+      ),
+      child: Column(
+        children: [
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+            decoration: const BoxDecoration(border: Border(bottom: BorderSide(color: WebColors.border))),
+            child: Row(
+              children: [
+                Expanded(flex: 2, child: Text('RESTAURANT', style: WebText.label())),
+                Expanded(flex: 2, child: Text('CUSTOMER', style: WebText.label())),
+                Expanded(flex: 1, child: Text('AMOUNT', style: WebText.label())),
+                Expanded(flex: 1, child: Text('STATUS', style: WebText.label())),
+              ],
+            ),
+          ),
+          ..._recentOrders.map((o) {
+            final restaurant = (o['restaurants'] as Map?)??{};
+            final profile = (o['profiles'] as Map?)??{};
+            final status = o['status'] as String? ?? 'pending';
+            final amount = (o['total_amount'] as num?)?.toDouble() ?? 0;
+            return Container(
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
+              decoration: const BoxDecoration(border: Border(bottom: BorderSide(color: WebColors.border))),
+              child: Row(
+                children: [
+                  Expanded(flex: 2, child: Text(restaurant['name'] ?? 'Unknown', style: WebText.h3())),
+                  Expanded(flex: 2, child: Text(profile['full_name'] ?? 'Customer', style: WebText.body(color: Colors.white))),
+                  Expanded(flex: 1, child: Text('ETB ${amount.toStringAsFixed(0)}', style: WebText.h3(color: AppColors.primary))),
+                  Expanded(flex: 1, child: Align(alignment: Alignment.centerLeft, child: _statusBadge(status))),
+                ],
+              ),
+            );
+          }),
+        ],
       ),
     );
   }
