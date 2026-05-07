@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import '../../providers/restaurant_provider.dart';
 import '../../core/constants/app_colors.dart';
 import '../../widgets/restaurant_card.dart';
@@ -161,21 +162,31 @@ class _HomeScreenState extends State<HomeScreen> {
                               ).animate().fadeIn(duration: 500.ms).slideX(begin: -0.05),
                             ),
                             const SizedBox(width: 48),
-                            // Decorative food emoji side
+                            // Real food photo
                             Expanded(
-                              child: Center(
-                                child: Container(
-                                  width: 280,
+                              child: ClipRRect(
+                                borderRadius: BorderRadius.circular(20),
+                                child: CachedNetworkImage(
+                                  imageUrl: 'https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=600&q=80&auto=format&fit=crop',
                                   height: 280,
-                                  decoration: BoxDecoration(
-                                    shape: BoxShape.circle,
-                                    color: AppColors.primary.withOpacity(0.12),
+                                  fit: BoxFit.cover,
+                                  placeholder: (_, __) => Container(
+                                    height: 280,
+                                    decoration: BoxDecoration(
+                                      color: AppColors.primary.withOpacity(0.08),
+                                      borderRadius: BorderRadius.circular(20),
+                                    ),
                                   ),
-                                  child: const Center(
-                                    child: Text('🍽️', style: TextStyle(fontSize: 120)),
+                                  errorWidget: (_, __, ___) => Container(
+                                    height: 280,
+                                    decoration: BoxDecoration(
+                                      color: AppColors.primary.withOpacity(0.08),
+                                      borderRadius: BorderRadius.circular(20),
+                                    ),
+                                    child: const Icon(Icons.restaurant_rounded, size: 60, color: AppColors.primary),
                                   ),
-                                ).animate().fadeIn(delay: 200.ms).scale(begin: const Offset(0.8, 0.8)),
-                              ),
+                                ),
+                              ).animate().fadeIn(delay: 200.ms).scale(begin: const Offset(0.95, 0.95)),
                             ),
                           ],
                         ),
