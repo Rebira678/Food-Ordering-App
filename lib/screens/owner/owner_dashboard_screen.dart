@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -306,6 +307,9 @@ class _OwnerDashboardScreenState extends State<OwnerDashboardScreen>
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final auth = context.read<AuthProvider>();
+    final isWideWeb = kIsWeb && MediaQuery.of(context).size.width >= 900;
+
+    if (isWideWeb) return _buildWebLayout(context, theme, auth);
 
     return Scaffold(
       floatingActionButton: _tabController.index == 1 ? FloatingActionButton.extended(
@@ -334,6 +338,383 @@ class _OwnerDashboardScreenState extends State<OwnerDashboardScreen>
                       ),
                     ),
                   ]),
+      ),
+    );
+  }
+
+  // ── WEB LAYOUT ─────────────────────────────────────────────────────────────
+  Widget _buildWebLayout(BuildContext context, ThemeData theme, AuthProvider auth) {
+    const bg = Color(0xFF0C0E14);
+    const sidebar = Color(0xFF111318);
+    const card = Color(0xFF13161E);
+    const border = Color(0xFF1E2130);
+
+    final navItems = [
+      (Icons.receipt_long_rounded, 'Orders', 0),
+      (Icons.restaurant_menu_rounded, 'Menu', 1),
+      (Icons.bar_chart_rounded, 'Analytics', 2),
+    ];
+
+    return Scaffold(
+      backgroundColor: bg,
+      body: _isLoading
+          ? const Center(child: CircularProgressIndicator(color: AppColors.primary))
+          : _restaurantId == null
+              ? _buildNoRestaurant(theme)
+              : Row(
+                  children: [
+                    // ── Sidebar ──
+                    Container(
+                      width: 240,
+                      color: sidebar,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          // Logo
+                          Padding(
+                            padding: const EdgeInsets.fromLTRB(24, 32, 24, 8),
+                            child: Row(
+                              children: [
+                                Container(
+                                  width: 36, height: 36,
+                                  decoration: BoxDecoration(color: AppColors.primary, borderRadius: BorderRadius.circular(10)),
+                                  child: const Icon(Icons.restaurant_rounded, color: Colors.white, size: 20),
+                                ),
+                                const SizedBox(width: 10),
+                                Expanded(
+                                  child: Text('Partner Hub',
+                                      style: GoogleFonts.outfit(fontSize: 16, fontWeight: FontWeight.w900, color: Colors.white)),
+                                ),
+                              ],
+                            ),
+                          ),
+                          // Restaurant name
+                          Padding(
+                            padding: const EdgeInsets.fromLTRB(24, 4, 24, 24),
+                            child: Text(
+                              _restaurant['name'] ?? 'My Restaurant',
+                              style: GoogleFonts.inter(fontSize: 12, color: const Color(0xFF6B7280)),
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                          const Divider(color: border, height: 1),
+                          const SizedBox(height: 16),
+                          // Nav
+                          ...navItems.map((item) {
+                            final isActive = _tabController.index == item.$3;
+                            return GestureDetector(
+                              onTap: () => setState(() => _tabController.animateTo(item.$3)),
+                              child: AnimatedContainer(
+                                duration: const Duration(milliseconds: 150),
+                                margin: const EdgeInsets.fromLTRB(12, 2, 12, 2),
+                                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                                decoration: BoxDecoration(
+                                  color: isActive ? AppColors.primary.withOpacity(0.12) : Colors.transparent,
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
+                                child: Row(
+                                  children: [
+                                    Icon(item.$1, size: 18, color: isActive ? AppColors.primary : const Color(0xFF6B7280)),
+                                    const SizedBox(width: 12),
+                                    Text(item.$2,
+                                        style: GoogleFonts.outfit(
+                                          fontSize: 14,
+                                          fontWeight: isActive ? FontWeight.w700 : FontWeight.w500,
+                                          color: isActive ? AppColors.primary : const Color(0xFF6B7280),
+                                        )),
+                                    if (item.$3 == 0 && _liveOrders.any((o) => o['status'] == 'pending')) ...[  
+                                      const Spacer(),
+                                      Container(
+                                        padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
+                                        decoration: BoxDecoration(color: AppColors.primary, borderRadius: BorderRadius.circular(10)),
+                                        child: Text(
+                                          '${_liveOrders.where((o) => o['status'] == 'pending').length}',
+                                          style: GoogleFonts.inter(color: Colors.white, fontSize: 11, fontWeight: FontWeight.w700),
+                                        ),
+                                      ),
+                                    ],
+                                  ],
+                                ),
+                              ),
+                            );
+                          }),
+                          const Spacer(),
+                          const Divider(color: border, height: 1),
+                          // Bottom actions
+                          ListTile(
+                            leading: const Icon(Icons.refresh_rounded, color: Color(0xFF6B7280), size: 18),
+                            title: Text('Refresh', style: GoogleFonts.inter(color: const Color(0xFF6B7280), fontSize: 13)),
+                            onTap: _loadDashboard,
+                            dense: true,
+                          ),
+                          ListTile(
+                            leading: const Icon(Icons.logout_rounded, color: Colors.redAccent, size: 18),
+                            title: Text('Sign Out', style: GoogleFonts.inter(color: Colors.redAccent, fontSize: 13)),
+                            onTap: () { auth.logout(); context.go('/auth'); },
+                            dense: true,
+                          ),
+                          const SizedBox(height: 16),
+                        ],
+                      ),
+                    ),
+                    // ── Main Content ──
+                    Expanded(
+                      child: Column(
+                        children: [
+                          // Top bar
+                          Container(
+                            height: 64,
+                            padding: const EdgeInsets.symmetric(horizontal: 32),
+                            decoration: BoxDecoration(
+                              color: card,
+                              border: const Border(bottom: BorderSide(color: border)),
+                            ),
+                            child: Row(
+                              children: [
+                                Text(
+                                  navItems[_tabController.index].$2,
+                                  style: GoogleFonts.outfit(fontSize: 20, fontWeight: FontWeight.w800, color: Colors.white),
+                                ),
+                                const Spacer(),
+                                if (_tabController.index == 1)
+                                  ElevatedButton.icon(
+                                    onPressed: _showAddFoodDialog,
+                                    style: ElevatedButton.styleFrom(
+                                      backgroundColor: AppColors.primary,
+                                      foregroundColor: Colors.white,
+                                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                                      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                                    ),
+                                    icon: const Icon(Icons.add_rounded, size: 16),
+                                    label: Text('Add Item', style: GoogleFonts.outfit(fontWeight: FontWeight.w700)),
+                                  ),
+                              ],
+                            ),
+                          ),
+                          // Stats row
+                          if (_tabController.index == 0 || _tabController.index == 2)
+                            Container(
+                              padding: const EdgeInsets.fromLTRB(32, 24, 32, 0),
+                              child: Row(
+                                children: [
+                                  _webStatCard('Total Orders', '$_totalOrders', Icons.receipt_long_rounded, AppColors.primary),
+                                  const SizedBox(width: 16),
+                                  _webStatCard('Revenue', 'ETB ${_totalRevenue.toStringAsFixed(0)}', Icons.payments_rounded, const Color(0xFF10B981)),
+                                  const SizedBox(width: 16),
+                                  _webStatCard("Today's Orders", '$_todayOrders', Icons.today_rounded, const Color(0xFFF59E0B)),
+                                  const SizedBox(width: 16),
+                                  _webStatCard('Pending', '${_liveOrders.where((o) => o['status'] == 'pending').length}', Icons.hourglass_empty_rounded, Colors.orangeAccent),
+                                ],
+                              ),
+                            ),
+                          // Tab content
+                          Expanded(
+                            child: Padding(
+                              padding: const EdgeInsets.all(32),
+                              child: TabBarView(
+                                controller: _tabController,
+                                physics: const NeverScrollableScrollPhysics(),
+                                children: [
+                                  _buildWebOrdersTable(),
+                                  _buildMenuTab(theme),
+                                  _buildAnalyticsTab(theme),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+    );
+  }
+
+  Widget _webStatCard(String label, String value, IconData icon, Color color) {
+    return Expanded(
+      child: Container(
+        padding: const EdgeInsets.all(20),
+        decoration: BoxDecoration(
+          color: const Color(0xFF13161E),
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(color: const Color(0xFF1E2130)),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Container(
+              width: 36, height: 36,
+              decoration: BoxDecoration(color: color.withOpacity(0.12), borderRadius: BorderRadius.circular(9)),
+              child: Icon(icon, color: color, size: 18),
+            ),
+            const SizedBox(height: 16),
+            Text(value, style: GoogleFonts.outfit(fontSize: 26, fontWeight: FontWeight.w900, color: Colors.white)),
+            const SizedBox(height: 2),
+            Text(label, style: GoogleFonts.inter(fontSize: 12, color: const Color(0xFF6B7280))),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildWebOrdersTable() {
+    if (_liveOrders.isEmpty) {
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Container(
+              width: 72, height: 72,
+              decoration: BoxDecoration(color: AppColors.primary.withOpacity(0.08), borderRadius: BorderRadius.circular(20)),
+              child: const Icon(Icons.inbox_rounded, size: 36, color: AppColors.primary),
+            ),
+            const SizedBox(height: 16),
+            Text('No orders yet', style: GoogleFonts.outfit(fontSize: 18, fontWeight: FontWeight.w700, color: Colors.white)),
+            const SizedBox(height: 6),
+            Text('Orders will appear here in real time', style: GoogleFonts.inter(color: const Color(0xFF6B7280), fontSize: 14)),
+          ],
+        ),
+      );
+    }
+    return Container(
+      decoration: BoxDecoration(
+        color: const Color(0xFF13161E),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: const Color(0xFF1E2130)),
+      ),
+      child: Column(
+        children: [
+          // Table header
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+            decoration: const BoxDecoration(
+              border: Border(bottom: BorderSide(color: Color(0xFF1E2130))),
+            ),
+            child: Row(
+              children: [
+                _tableHeader('CUSTOMER', flex: 2),
+                _tableHeader('ITEMS', flex: 2),
+                _tableHeader('AMOUNT', flex: 1),
+                _tableHeader('STATUS', flex: 1),
+                _tableHeader('ACTIONS', flex: 2),
+              ],
+            ),
+          ),
+          // Rows
+          Expanded(
+            child: ListView.separated(
+              itemCount: _liveOrders.length,
+              separatorBuilder: (_, __) => const Divider(color: Color(0xFF1E2130), height: 1),
+              itemBuilder: (ctx, i) {
+                final o = _liveOrders[i];
+                final status = o['status'] as String? ?? 'pending';
+                final customer = (o['profiles'] as Map?)?['full_name'] ?? 'Customer';
+                final phone = (o['profiles'] as Map?)?['phone'] ?? '';
+                final amount = (o['total_amount'] as num?)?.toDouble() ?? 0;
+                final items = o['order_items'] as List? ?? [];
+                final paymentUrl = o['payment_image_url'] as String?;
+
+                return Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+                  child: Row(
+                    children: [
+                      // Customer
+                      Expanded(
+                        flex: 2,
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(customer, style: GoogleFonts.outfit(fontWeight: FontWeight.w700, fontSize: 14, color: Colors.white)),
+                            if (phone.isNotEmpty)
+                              Text(phone, style: GoogleFonts.inter(fontSize: 12, color: const Color(0xFF6B7280))),
+                            Text(o['delivery_address'] ?? '', style: GoogleFonts.inter(fontSize: 11, color: const Color(0xFF4B5563)),
+                                maxLines: 1, overflow: TextOverflow.ellipsis),
+                          ],
+                        ),
+                      ),
+                      // Items
+                      Expanded(
+                        flex: 2,
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: items.take(3).map((item) {
+                            final qty = item['quantity'] ?? 1;
+                            final name = item['menu_items']?['name'] ?? '';
+                            return Text('$qty× $name',
+                                style: GoogleFonts.inter(fontSize: 12, color: const Color(0xFF9CA3AF)),
+                                maxLines: 1, overflow: TextOverflow.ellipsis);
+                          }).toList(),
+                        ),
+                      ),
+                      // Amount
+                      Expanded(
+                        flex: 1,
+                        child: Text('ETB ${amount.toStringAsFixed(0)}',
+                            style: GoogleFonts.outfit(fontWeight: FontWeight.w800, fontSize: 15, color: AppColors.primary)),
+                      ),
+                      // Status badge
+                      Expanded(
+                        flex: 1,
+                        child: _statusBadge(status),
+                      ),
+                      // Actions
+                      Expanded(
+                        flex: 2,
+                        child: Wrap(
+                          spacing: 6,
+                          runSpacing: 6,
+                          children: [
+                            if (status == 'pending') ...[
+                              _actionBtn('Accept', AppColors.primary, () => _updateOrderStatus(o['id'], 'preparing')),
+                              _actionBtn('Decline', Colors.red, () => _updateOrderStatus(o['id'], 'cancelled')),
+                            ],
+                            if (status == 'preparing')
+                              _actionBtn('Out for Delivery', const Color(0xFF6366F1), () => _updateOrderStatus(o['id'], 'delivering')),
+                            if (status == 'delivering')
+                              _actionBtn('Mark Delivered', const Color(0xFF10B981), () => _updateOrderStatus(o['id'], 'delivered')),
+                            if (paymentUrl != null && paymentUrl.isNotEmpty)
+                              _actionBtn('Receipt', Colors.grey, () {
+                                showDialog(context: context, builder: (_) => Dialog(
+                                  child: ClipRRect(
+                                    borderRadius: BorderRadius.circular(12),
+                                    child: Image.network(paymentUrl, fit: BoxFit.contain),
+                                  ),
+                                ));
+                              }),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                );
+              },
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _tableHeader(String label, {int flex = 1}) {
+    return Expanded(
+      flex: flex,
+      child: Text(label,
+          style: GoogleFonts.inter(fontSize: 11, fontWeight: FontWeight.w700,
+              color: const Color(0xFF4B5563), letterSpacing: 0.8)),
+    );
+  }
+
+  Widget _actionBtn(String label, Color color, VoidCallback onTap) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+        decoration: BoxDecoration(
+          color: color.withOpacity(0.12),
+          borderRadius: BorderRadius.circular(7),
+          border: Border.all(color: color.withOpacity(0.3)),
+        ),
+        child: Text(label, style: GoogleFonts.outfit(fontSize: 11, fontWeight: FontWeight.w700, color: color)),
       ),
     );
   }
