@@ -414,13 +414,13 @@ class _SuperadminDashboardScreenState extends State<SuperadminDashboardScreen>
       children: [
         Row(
           children: [
-            WebStatCard(label: 'Restaurants', value: '${_stats['restaurants'] ?? 0}', icon: Icons.store_rounded, accentColor: AppColors.primary),
+            Expanded(child: WebStatCard(label: 'Restaurants', value: '${_stats['restaurants'] ?? 0}', icon: Icons.store_rounded, accentColor: AppColors.primary)),
             const SizedBox(width: 16),
-            WebStatCard(label: 'Total Orders', value: '${_stats['orders'] ?? 0}', icon: Icons.receipt_long_rounded, accentColor: AppColors.success),
+            Expanded(child: WebStatCard(label: 'Total Orders', value: '${_stats['orders'] ?? 0}', icon: Icons.receipt_long_rounded, accentColor: AppColors.success)),
             const SizedBox(width: 16),
-            WebStatCard(label: 'Customers', value: '${_stats['customers'] ?? 0}', icon: Icons.people_rounded, accentColor: const Color(0xFF6366F1)),
+            Expanded(child: WebStatCard(label: 'Customers', value: '${_stats['customers'] ?? 0}', icon: Icons.people_rounded, accentColor: const Color(0xFF6366F1))),
             const SizedBox(width: 16),
-            WebStatCard(label: 'Revenue', value: 'ETB ${((_stats['revenue'] ?? 0.0) as double).toStringAsFixed(0)}', icon: Icons.payments_rounded, accentColor: const Color(0xFFF59E0B)),
+            Expanded(child: WebStatCard(label: 'Revenue', value: 'ETB ${((_stats['revenue'] ?? 0.0) as num).toDouble().toStringAsFixed(0)}', icon: Icons.payments_rounded, accentColor: const Color(0xFFF59E0B))),
           ],
         ),
         const SizedBox(height: 32),
