@@ -107,7 +107,7 @@ class _OwnerDashboardScreenState extends State<OwnerDashboardScreen>
 
       final allOrders = await _supabase
           .from('orders')
-          .select('*, profiles(full_name)')
+          .select('*, profiles(full_name, phone), order_items(quantity, unit_price, menu_items(name))')
           .eq('restaurant_id', _restaurantId!)
           .order('created_at', ascending: false);
 
@@ -439,6 +439,10 @@ class _OwnerDashboardScreenState extends State<OwnerDashboardScreen>
           final status = o['status'] as String? ?? 'pending';
           final customer = (o['profiles'] as Map?)?['full_name'] ?? 'Customer';
           final amount = (o['total_amount'] as num?)?.toDouble() ?? 0;
+          final phone = (o['profiles'] as Map?)?['phone'] ?? 'No phone provided';
+          final items = o['order_items'] as List<dynamic>? ?? [];
+          final paymentImageUrl = o['payment_image_url'] as String?;
+          
           return Container(
             margin: const EdgeInsets.only(bottom: 10),
             padding: const EdgeInsets.all(14),
@@ -454,13 +458,62 @@ class _OwnerDashboardScreenState extends State<OwnerDashboardScreen>
                 Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
                   Text(customer, style: GoogleFonts.outfit(fontWeight: FontWeight.w700, fontSize: 15)),
                   Text(o['delivery_address'] ?? '', style: theme.textTheme.bodySmall),
+                  Text('📞 $phone', style: theme.textTheme.bodySmall?.copyWith(color: AppColors.primary)),
                 ])),
                 Column(crossAxisAlignment: CrossAxisAlignment.end, children: [
                   Text('ETB ${amount.toStringAsFixed(2)}',
                       style: GoogleFonts.outfit(color: AppColors.primary, fontWeight: FontWeight.w900)),
+                  const SizedBox(height: 4),
                   _statusBadge(status),
                 ]),
               ]),
+              const SizedBox(height: 12),
+              const Divider(height: 1),
+              const SizedBox(height: 8),
+              
+              // Order Items
+              Text('Items Ordered:', style: GoogleFonts.outfit(fontWeight: FontWeight.w800, fontSize: 13)),
+              const SizedBox(height: 4),
+              ...items.map((item) {
+                final qty = item['quantity'] ?? 1;
+                final itemName = item['menu_items']?['name'] ?? 'Unknown Item';
+                final price = item['unit_price'] ?? 0;
+                return Padding(
+                  padding: const EdgeInsets.only(bottom: 2),
+                  child: Row(
+                    children: [
+                      Text('${qty}x', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
+                      const SizedBox(width: 8),
+                      Expanded(child: Text(itemName, style: const TextStyle(fontSize: 13))),
+                      Text('ETB $price', style: const TextStyle(fontSize: 13, color: Colors.grey)),
+                    ],
+                  ),
+                );
+              }),
+              
+              // Payment Screenshot
+              if (paymentImageUrl != null && paymentImageUrl.isNotEmpty) ...[
+                const SizedBox(height: 12),
+                Text('Payment Screenshot:', style: GoogleFonts.outfit(fontWeight: FontWeight.w800, fontSize: 13)),
+                const SizedBox(height: 8),
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(8),
+                  child: Image.network(
+                    paymentImageUrl,
+                    height: 120,
+                    width: double.infinity,
+                    fit: BoxFit.cover,
+                    errorBuilder: (context, error, stackTrace) => Container(
+                      height: 120,
+                      width: double.infinity,
+                      color: Colors.grey[200],
+                      child: const Center(child: Icon(Icons.broken_image, color: Colors.grey)),
+                    ),
+                  ),
+                ),
+              ],
+              
+              const SizedBox(height: 12),
               if (status == 'pending') ...[
                 const SizedBox(height: 10),
                 Row(children: [

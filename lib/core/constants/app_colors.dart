@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 
 class AppColors {
   // Brand
-  static const primary = Color(0xFFFF5A5F);
+  static const primary = Color(0xFF65A30D); // Deeper Lime Green
   static const success = Color(0xFF10B981);
 
   // Light theme
@@ -12,8 +12,8 @@ class AppColors {
   static const lightIcon = Color(0xFF687076);
 
   // Dark theme
-  static const darkBackground = Color(0xFF151718);
-  static const darkCard = Color(0xFF1E222B);
+  static const darkBackground = Color(0xFF111613);
+  static const darkCard = Color(0xFF181E19);
   static const darkText = Color(0xFFECEDEE);
   static const darkIcon = Color(0xFF9BA1A6);
 

@@ -62,6 +62,19 @@ class OrdersScreen extends StatelessWidget {
                               'Order #${order.id} • ${order.items.length} items • ETB ${order.grandTotal.toStringAsFixed(2)}',
                               style: theme.textTheme.bodySmall,
                             ),
+                            const SizedBox(height: 12),
+                            // List the items ordered
+                            ...order.items.map((item) => Padding(
+                                  padding: const EdgeInsets.only(bottom: 4),
+                                  child: Row(
+                                    children: [
+                                      Text('${item.quantity}x', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
+                                      const SizedBox(width: 8),
+                                      Expanded(child: Text(item.name, style: const TextStyle(fontSize: 13))),
+                                      Text('ETB ${item.price}', style: const TextStyle(fontSize: 13, color: Colors.grey)),
+                                    ],
+                                  ),
+                                )),
                             const SizedBox(height: 20),
                             OrderTimeline(status: order.statusLabel),
                             const SizedBox(height: 16),

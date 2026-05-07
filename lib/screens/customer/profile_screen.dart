@@ -26,12 +26,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
   ];
 
   final _avatarOptions = [
-    'https://api.dicebear.com/7.x/avataaars/svg?seed=Felix',
-    'https://api.dicebear.com/7.x/avataaars/svg?seed=Aneka',
-    'https://api.dicebear.com/7.x/avataaars/svg?seed=Bibi',
-    'https://api.dicebear.com/7.x/avataaars/svg?seed=Caleb',
-    'https://api.dicebear.com/7.x/avataaars/svg?seed=Dave',
-    'https://api.dicebear.com/7.x/avataaars/svg?seed=Ezra',
+    'https://api.dicebear.com/7.x/avataaars/png?seed=Felix',
+    'https://api.dicebear.com/7.x/avataaars/png?seed=Aneka',
+    'https://api.dicebear.com/7.x/avataaars/png?seed=Bibi',
+    'https://api.dicebear.com/7.x/avataaars/png?seed=Caleb',
+    'https://api.dicebear.com/7.x/avataaars/png?seed=Dave',
+    'https://api.dicebear.com/7.x/avataaars/png?seed=Ezra',
   ];
   int _selectedAvatarIdx = 0;
   bool _showAvatarPicker = false;
