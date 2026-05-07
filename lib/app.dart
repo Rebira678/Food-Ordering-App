@@ -15,6 +15,7 @@ import 'screens/customer/profile_screen.dart';
 import 'screens/owner/owner_dashboard_screen.dart';
 import 'screens/owner/owner_apply_screen.dart';
 import 'screens/superadmin/superadmin_dashboard_screen.dart';
+import 'widgets/web_page_wrapper.dart';
 
 class SaffronEatsApp extends StatefulWidget {
   const SaffronEatsApp({super.key});
@@ -52,12 +53,12 @@ class _SaffronEatsAppState extends State<SaffronEatsApp> {
       routes: [
         GoRoute(
           path: '/auth',
-          builder: (ctx, state) => const AuthScreen(),
+          builder: (ctx, state) => const WebPageWrapper(child: AuthScreen()),
         ),
 
         // ── Customer Shell (Home, Orders, Profile) ──────────────────────────
         ShellRoute(
-          builder: (ctx, state, child) => CustomerShell(child: child),
+          builder: (ctx, state, child) => WebPageWrapper(child: CustomerShell(child: child)),
           routes: [
             GoRoute(path: '/', builder: (ctx, state) => const HomeScreen()),
             GoRoute(path: '/orders', builder: (ctx, state) => const OrdersScreen()),
@@ -67,7 +68,7 @@ class _SaffronEatsAppState extends State<SaffronEatsApp> {
 
         // ── Owner Shell (Dashboard) ─────────────────────────────────────────
         ShellRoute(
-          builder: (ctx, state, child) => OwnerShell(child: child),
+          builder: (ctx, state, child) => WebPageWrapper(maxWidth: 900, child: OwnerShell(child: child)),
           routes: [
             GoRoute(path: '/owner/dashboard', builder: (ctx, state) => const OwnerDashboardScreen()),
           ],
@@ -75,7 +76,7 @@ class _SaffronEatsAppState extends State<SaffronEatsApp> {
 
         // ── Superadmin Shell (Full App + Admin tab) ─────────────────────────
         ShellRoute(
-          builder: (ctx, state, child) => AdminShell(child: child),
+          builder: (ctx, state, child) => WebPageWrapper(maxWidth: 900, child: AdminShell(child: child)),
           routes: [
             GoRoute(path: '/admin/home', builder: (ctx, state) => const HomeScreen()),
             GoRoute(path: '/admin/orders', builder: (ctx, state) => const OrdersScreen()),
@@ -87,15 +88,22 @@ class _SaffronEatsAppState extends State<SaffronEatsApp> {
         // ── Shared routes (no shell) ────────────────────────────────────────
         GoRoute(
           path: '/restaurant/:id',
-          builder: (ctx, state) => RestaurantDetailScreen(
-            restaurantId: state.pathParameters['id']!,
+          builder: (ctx, state) => WebPageWrapper(
+            child: RestaurantDetailScreen(
+              restaurantId: state.pathParameters['id']!,
+            ),
           ),
         ),
-        GoRoute(path: '/cart', builder: (ctx, state) => const CartScreen()),
-        GoRoute(path: '/owner/apply', builder: (ctx, state) => const OwnerApplyScreen()),
+        GoRoute(
+          path: '/cart',
+          builder: (ctx, state) => const WebPageWrapper(child: CartScreen()),
+        ),
+        GoRoute(
+          path: '/owner/apply',
+          builder: (ctx, state) => const WebPageWrapper(child: OwnerApplyScreen()),
+        ),
         GoRoute(path: '/superadmin/dashboard', builder: (ctx, state) {
-          // Legacy redirect to new admin shell
-          return const AdminShell(child: SuperadminDashboardScreen());
+          return const WebPageWrapper(maxWidth: 900, child: AdminShell(child: SuperadminDashboardScreen()));
         }),
       ],
     );
