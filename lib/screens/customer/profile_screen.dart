@@ -267,7 +267,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       GestureDetector(
-                        onTap: () => context.go('/customer/home'),
+                        onTap: () => context.go('/'),
                         child: Icon(Icons.arrow_back_ios_new_rounded, size: 20, color: textColor),
                       ),
                       Row(
