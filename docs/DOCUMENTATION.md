@@ -10,7 +10,7 @@
     *   Natnael Esayas (UGR/ 35126/16)
     *   Rebira Adugna (UGR/ 35240/16)
 
-    
+
 **Platform:** Flutter (Android + Web)  
 **Backend:** Supabase (PostgreSQL + Realtime + Auth + Storage)  
 **Version Control:** Git / GitHub — `Rebira678/Food-Ordering-App`

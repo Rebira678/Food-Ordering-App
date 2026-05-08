@@ -86,7 +86,7 @@ class _SuperadminDashboardScreenState extends State<SuperadminDashboardScreen>
     try {
       final data = await _supabase
           .from('restaurants')
-          .select('*, profiles(full_name)')
+          .select('*')
           .order('created_at', ascending: false);
       setState(() => _restaurants = List<Map<String, dynamic>>.from(data));
     } catch (e) {
@@ -159,47 +159,115 @@ class _SuperadminDashboardScreenState extends State<SuperadminDashboardScreen>
 
     showDialog(
       context: context,
-      builder: (ctx) => AlertDialog(
-        title: const Text('Add New Restaurant'),
-        content: SingleChildScrollView(
+      builder: (ctx) => Dialog(
+        backgroundColor: Colors.transparent,
+        child: Container(
+          width: 500,
+          padding: const EdgeInsets.all(32),
+          decoration: BoxDecoration(
+            color: Theme.of(context).cardColor,
+            borderRadius: BorderRadius.circular(24),
+            boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.1), blurRadius: 24, offset: const Offset(0, 10))],
+          ),
           child: Column(
             mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              TextField(controller: nameCtrl, decoration: const InputDecoration(labelText: 'Restaurant Name')),
-              const SizedBox(height: 10),
-              TextField(controller: addressCtrl, decoration: const InputDecoration(labelText: 'Address')),
-              const SizedBox(height: 10),
-              TextField(controller: descCtrl, decoration: const InputDecoration(labelText: 'Description')),
-              const SizedBox(height: 10),
-              TextField(controller: emailCtrl, decoration: const InputDecoration(labelText: 'Owner Email (for linking)')),
+              Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(color: AppColors.primary.withOpacity(0.1), shape: BoxShape.circle),
+                    child: const Icon(Icons.store_rounded, color: AppColors.primary, size: 28),
+                  ),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text('Add New Restaurant', style: GoogleFonts.outfit(fontSize: 22, fontWeight: FontWeight.w800)),
+                        Text('Register a new partner on SaffronEats', style: GoogleFonts.inter(fontSize: 13, color: Colors.grey.shade500)),
+                      ],
+                    ),
+                  ),
+                  IconButton(icon: const Icon(Icons.close_rounded), onPressed: () => Navigator.pop(ctx)),
+                ],
+              ),
+              const SizedBox(height: 32),
+              
+              _dialogField(nameCtrl, 'Restaurant Name', Icons.badge_outlined),
+              const SizedBox(height: 16),
+              _dialogField(addressCtrl, 'Physical Address', Icons.location_on_outlined),
+              const SizedBox(height: 16),
+              _dialogField(descCtrl, 'Brief Description', Icons.description_outlined),
+              const SizedBox(height: 16),
+              _dialogField(emailCtrl, 'Owner Email (for account linking)', Icons.email_outlined),
+              
+              const SizedBox(height: 40),
+              Row(
+                children: [
+                  Expanded(
+                    child: TextButton(
+                      onPressed: () => Navigator.pop(ctx),
+                      style: TextButton.styleFrom(padding: const EdgeInsets.symmetric(vertical: 16)),
+                      child: Text('Cancel', style: GoogleFonts.inter(fontWeight: FontWeight.w600, color: Colors.grey.shade600)),
+                    ),
+                  ),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    flex: 2,
+                    child: ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppColors.primary,
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(vertical: 16),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                        elevation: 0,
+                      ),
+                      onPressed: () async {
+                        if (nameCtrl.text.isEmpty) return;
+                        try {
+                          await _supabase.from('restaurants').insert({
+                            'id': 'c${DateTime.now().millisecondsSinceEpoch}',
+                            'name': nameCtrl.text.trim(),
+                            'address': addressCtrl.text.trim(),
+                            'description': descCtrl.text.trim(),
+                            'owner_email': emailCtrl.text.trim().toLowerCase(),
+                            'is_active': true,
+                            'rating': 5.0,
+                          });
+                          Navigator.pop(ctx);
+                          _fetchRestaurants();
+                          _fetchStats();
+                          _showSnack('✅ Restaurant added successfully!');
+                        } catch (e) {
+                          _showSnack('Error: $e');
+                        }
+                      },
+                      child: Text('Register Restaurant', style: GoogleFonts.outfit(fontWeight: FontWeight.w700, fontSize: 16)),
+                    ),
+                  ),
+                ],
+              ),
             ],
           ),
         ),
-        actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Cancel')),
-          ElevatedButton(
-            onPressed: () async {
-              if (nameCtrl.text.isEmpty) return;
-              try {
-                await _supabase.from('restaurants').insert({
-                  'id': 'c${DateTime.now().millisecondsSinceEpoch}',
-                  'name': nameCtrl.text.trim(),
-                  'address': addressCtrl.text.trim(),
-                  'description': descCtrl.text.trim(),
-                  'owner_email': emailCtrl.text.trim().toLowerCase(),
-                  'is_active': true,
-                  'rating': 5.0,
-                });
-                Navigator.pop(ctx);
-                _fetchRestaurants();
-                _showSnack('✅ Restaurant added successfully!');
-              } catch (e) {
-                _showSnack('Error: $e');
-              }
-            },
-            child: const Text('Add'),
-          ),
-        ],
+      ),
+    );
+  }
+
+  Widget _dialogField(TextEditingController ctrl, String hint, IconData icon) {
+    return TextField(
+      controller: ctrl,
+      decoration: InputDecoration(
+        hintText: hint,
+        hintStyle: GoogleFonts.inter(color: Colors.grey.shade400, fontSize: 14),
+        prefixIcon: Icon(icon, color: Colors.grey.shade400, size: 20),
+        filled: true,
+        fillColor: Theme.of(context).brightness == Brightness.dark ? Colors.white12 : Colors.grey.shade50,
+        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
+        focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: AppColors.primary)),
+        contentPadding: const EdgeInsets.symmetric(vertical: 16),
       ),
     );
   }

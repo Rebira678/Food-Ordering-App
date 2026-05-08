@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 
 class AppColors {
   // Brand
-  static const primary = Color(0xFF9BEC00); // Neon Green
+  static const primary = Color(0xFF047857); // Darker Emerald Green
   static const success = Color(0xFF10B981);
 
   // Light theme

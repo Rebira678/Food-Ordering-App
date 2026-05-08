@@ -71,9 +71,93 @@ class _ProfileScreenState extends State<ProfileScreen> {
       phone: _phoneCtrl.text.trim().isEmpty ? null : _phoneCtrl.text.trim(),
       address: _addressCtrl.text.trim(),
       avatarUrl: _avatarOptions[_selectedAvatarIdx],
+      pushEnabled: _pushEnabled,
+      emailEnabled: _emailPromos,
     ));
-    setState(() => _activeSection = '');
     _snack('✅ Profile Updated Successfully!');
+  }
+
+  void _showEditProfileDialog() {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: Colors.white,
+        title: Text('Edit Profile', style: GoogleFonts.outfit(fontWeight: FontWeight.w700, color: Colors.black)),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            TextField(controller: _nameCtrl, decoration: const InputDecoration(labelText: 'Full Name')),
+            const SizedBox(height: 12),
+            TextField(controller: _emailCtrl, decoration: const InputDecoration(labelText: 'Email')),
+            const SizedBox(height: 12),
+            TextField(controller: _phoneCtrl, decoration: const InputDecoration(labelText: 'Phone Number')),
+          ],
+        ),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Cancel')),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(backgroundColor: AppColors.primary, foregroundColor: Colors.white),
+            onPressed: () { _saveProfile(); Navigator.pop(ctx); },
+            child: const Text('Save'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showEditAddressDialog() {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: Colors.white,
+        title: Text('Edit Address', style: GoogleFonts.outfit(fontWeight: FontWeight.w700, color: Colors.black)),
+        content: TextField(controller: _addressCtrl, decoration: const InputDecoration(labelText: 'Delivery Address')),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Cancel')),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(backgroundColor: AppColors.primary, foregroundColor: Colors.white),
+            onPressed: () { _saveProfile(); Navigator.pop(ctx); },
+            child: const Text('Save'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showNotificationsDialog() {
+    showDialog(
+      context: context,
+      builder: (ctx) => StatefulBuilder(
+        builder: (context, setDialogState) => AlertDialog(
+          backgroundColor: Colors.white,
+          title: Text('Notification Preferences', style: GoogleFonts.outfit(fontWeight: FontWeight.w700, color: Colors.black)),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              SwitchListTile(
+                title: Text('Push Notifications', style: GoogleFonts.inter(fontSize: 14)),
+                value: _pushEnabled,
+                activeColor: AppColors.success,
+                onChanged: (v) { setDialogState(() => _pushEnabled = v); setState(() => _pushEnabled = v); },
+              ),
+              SwitchListTile(
+                title: Text('Email Promos', style: GoogleFonts.inter(fontSize: 14)),
+                value: _emailPromos,
+                activeColor: AppColors.success,
+                onChanged: (v) { setDialogState(() => _emailPromos = v); setState(() => _emailPromos = v); },
+              ),
+            ],
+          ),
+          actions: [
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(backgroundColor: AppColors.primary, foregroundColor: Colors.white),
+              onPressed: () { _saveProfile(); Navigator.pop(ctx); },
+              child: const Text('Done'),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 
   void _snack(String msg) {
@@ -84,313 +168,355 @@ class _ProfileScreenState extends State<ProfileScreen> {
     ));
   }
 
-  Widget _accordion(String key, String icon, String title, Widget body, ThemeData theme) {
-    final isOpen = _activeSection == key;
-    return Column(
-      children: [
-        GestureDetector(
-          onTap: () => setState(() => _activeSection = isOpen ? '' : key),
-          child: Container(
-            padding: const EdgeInsets.all(20),
-            decoration: BoxDecoration(
-              color: theme.cardColor,
-              borderRadius: BorderRadius.vertical(
-                top: const Radius.circular(16),
-                bottom: isOpen ? Radius.zero : const Radius.circular(16),
-              ),
-            ),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text('$icon  $title', style: theme.textTheme.titleSmall),
-                AnimatedRotation(
-                  turns: isOpen ? 0.25 : 0,
-                  duration: const Duration(milliseconds: 200),
-                  child: Icon(Icons.chevron_right_rounded, color: AppColors.primary),
-                ),
-              ],
-            ),
-          ),
-        ),
-        AnimatedCrossFade(
-          firstChild: const SizedBox.shrink(),
-          secondChild: Container(
-            padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
-            decoration: BoxDecoration(
-              color: theme.cardColor,
-              borderRadius: const BorderRadius.vertical(bottom: Radius.circular(16)),
-            ),
-            child: body,
-          ),
-          crossFadeState: isOpen ? CrossFadeState.showSecond : CrossFadeState.showFirst,
-          duration: const Duration(milliseconds: 200),
-        ),
-        const SizedBox(height: 12),
-      ],
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final auth = context.watch<AuthProvider>();
     final themeProvider = context.watch<ThemeProvider>();
+    final auth = context.watch<AuthProvider>();
     final user = auth.user;
 
+    final isDark = theme.brightness == Brightness.dark;
+    final bgColor = isDark ? Colors.black : Colors.white;
+    final textColor = isDark ? Colors.white : Colors.black87;
+    final cardColor = isDark ? const Color(0xFF181818) : Colors.white;
+
     return Scaffold(
+      backgroundColor: bgColor,
       body: SafeArea(
-        child: ListView(
+        child: Column(
           children: [
-            // Header
-            Container(
-              padding: const EdgeInsets.all(24),
-              child: Column(
+            // Custom App Bar
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  // Avatar
-                  GestureDetector(
-                    onTap: () => setState(() => _showAvatarPicker = !_showAvatarPicker),
-                    child: Stack(
-                      children: [
-                        CircleAvatar(
-                          radius: 50,
-                          backgroundImage: NetworkImage(user?.avatarUrl ?? _avatarOptions[_selectedAvatarIdx]),
-                          backgroundColor: theme.cardColor,
+                  Icon(Icons.arrow_back_ios_new_rounded, size: 20, color: textColor),
+                  Row(
+                    children: [
+                      const Icon(Icons.restaurant_rounded, color: AppColors.primary, size: 24),
+                      const SizedBox(width: 8),
+                      Text('SaffronEats', style: GoogleFonts.outfit(fontSize: 22, fontWeight: FontWeight.w800, color: textColor)),
+                    ],
+                  ),
+                  Stack(
+                    children: [
+                      Padding(
+                        padding: const EdgeInsets.all(4.0),
+                        child: Icon(Icons.notifications_none_rounded, size: 26, color: textColor),
+                      ),
+                      Positioned(
+                        right: 0, top: 0,
+                        child: Container(
+                          padding: const EdgeInsets.all(4),
+                          decoration: const BoxDecoration(color: AppColors.primary, shape: BoxShape.circle),
+                          child: Text('3', style: GoogleFonts.inter(fontSize: 10, fontWeight: FontWeight.w700, color: Colors.white)),
                         ),
-                        Positioned(
-                          right: 0,
-                          bottom: 0,
-                          child: Container(
-                            width: 24,
-                            height: 24,
-                            decoration: const BoxDecoration(color: AppColors.primary, shape: BoxShape.circle),
-                            child: const Icon(Icons.edit, color: Colors.white, size: 12),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+            
+            Expanded(
+              child: ListView(
+                padding: const EdgeInsets.symmetric(horizontal: 24),
+                children: [
+                  const SizedBox(height: 12),
+                  Text('Profile Settings', style: GoogleFonts.outfit(fontSize: 26, fontWeight: FontWeight.w800, color: textColor)),
+                  const SizedBox(height: 4),
+                  Text('Manage your personal information and preferences', style: GoogleFonts.inter(fontSize: 13, color: Colors.grey.shade500)),
+                  const SizedBox(height: 24),
+
+                  // Profile Card
+                  Container(
+                    padding: const EdgeInsets.all(20),
+                    decoration: BoxDecoration(
+                      color: cardColor,
+                      borderRadius: BorderRadius.circular(16),
+                      boxShadow: [
+                        if (!isDark) BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 16, offset: const Offset(0, 4)),
+                      ],
+                      border: Border.all(color: isDark ? Colors.white12 : Colors.grey.shade200),
+                    ),
+                    child: Column(
+                      children: [
+                        Row(
+                          children: [
+                            Stack(
+                              children: [
+                                CircleAvatar(
+                                  radius: 36,
+                                  backgroundImage: NetworkImage(user?.avatarUrl ?? _avatarOptions[_selectedAvatarIdx]),
+                                ),
+                                Positioned(
+                                  right: -2, bottom: -2,
+                                  child: Container(
+                                    padding: const EdgeInsets.all(4),
+                                    decoration: BoxDecoration(
+                                      color: cardColor,
+                                      shape: BoxShape.circle,
+                                      border: Border.all(color: isDark ? Colors.white12 : Colors.grey.shade200),
+                                    ),
+                                    child: Icon(Icons.camera_alt_outlined, size: 14, color: textColor),
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(width: 16),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(user?.name ?? 'Guest User', style: GoogleFonts.inter(fontSize: 18, fontWeight: FontWeight.w700, color: textColor)),
+                                  const SizedBox(height: 4),
+                                  Text(user?.phone ?? '+251 91 234 5678', style: GoogleFonts.inter(fontSize: 13, color: Colors.grey.shade500)),
+                                  const SizedBox(height: 2),
+                                  Text(user?.email ?? 'user@example.com', style: GoogleFonts.inter(fontSize: 13, color: Colors.grey.shade500)),
+                                ],
+                              ),
+                            ),
+                            Icon(Icons.chevron_right_rounded, color: Colors.grey.shade400),
+                          ],
+                        ),
+                        const SizedBox(height: 24),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text('Profile Completion', style: GoogleFonts.inter(fontSize: 12, fontWeight: FontWeight.w600, color: textColor)),
+                            Text('90% Complete', style: GoogleFonts.inter(fontSize: 12, fontWeight: FontWeight.w700, color: AppColors.success)),
+                          ],
+                        ),
+                        const SizedBox(height: 10),
+                        ClipRRect(
+                          borderRadius: BorderRadius.circular(6),
+                          child: LinearProgressIndicator(
+                            value: 0.9,
+                            backgroundColor: AppColors.primary.withOpacity(0.15),
+                            valueColor: const AlwaysStoppedAnimation<Color>(AppColors.primary),
+                            minHeight: 6,
                           ),
                         ),
                       ],
                     ),
                   ),
+
+                  const SizedBox(height: 32),
+                  Text('Account Settings', style: GoogleFonts.inter(fontSize: 14, fontWeight: FontWeight.w600, color: Colors.grey.shade500)),
                   const SizedBox(height: 12),
-                  Text(user?.name ?? 'Guest User', style: theme.textTheme.headlineMedium),
-                  Text(user?.email ?? '', style: theme.textTheme.bodySmall),
-                  if (user?.phone != null && user!.phone!.isNotEmpty) ...[
-                    const SizedBox(height: 4),
-                    Text('📞 ${user.phone}', style: GoogleFonts.inter(color: AppColors.primary, fontWeight: FontWeight.w600)),
-                  ],
-                  if (user?.address != null) ...[
-                    const SizedBox(height: 4),
-                    Text('📍 ${user!.address}', style: GoogleFonts.inter(color: AppColors.primary, fontWeight: FontWeight.w600)),
-                  ],
-                  const SizedBox(height: 12),
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                    decoration: BoxDecoration(
-                      color: AppColors.primary.withOpacity(0.1),
-                      borderRadius: BorderRadius.circular(20),
-                    ),
-                    child: Text('💎 VIP Elite Tier • 2,450 pts',
-                        style: GoogleFonts.outfit(color: AppColors.primary, fontWeight: FontWeight.w800)),
+                  _settingsTile(
+                    title: 'Profile Information',
+                    subtitle: 'Update your personal details',
+                    icon: Icons.person_outline_rounded,
+                    iconColor: AppColors.primary,
+                    bgColor: AppColors.primary.withOpacity(0.1),
+                    isSelected: true,
+                    onTap: _showEditProfileDialog,
+                    cardColor: cardColor,
+                    textColor: textColor,
+                    isDark: isDark,
                   ),
+                  _settingsTile(
+                    title: 'Addresses',
+                    subtitle: 'Manage your saved addresses',
+                    icon: Icons.location_on_outlined,
+                    iconColor: AppColors.success,
+                    bgColor: AppColors.success.withOpacity(0.1),
+                    onTap: _showEditAddressDialog,
+                    cardColor: cardColor,
+                    textColor: textColor,
+                    isDark: isDark,
+                  ),
+                  _settingsTile(
+                    title: 'Payment Methods',
+                    subtitle: 'View and manage payments',
+                    icon: Icons.credit_card_outlined,
+                    iconColor: AppColors.success,
+                    bgColor: AppColors.success.withOpacity(0.1),
+                    onTap: () => _snack('Payment Methods not yet implemented.'),
+                    cardColor: cardColor,
+                    textColor: textColor,
+                    isDark: isDark,
+                  ),
+                  _settingsTile(
+                    title: 'Notification Preferences',
+                    subtitle: 'Choose your notification settings',
+                    icon: Icons.notifications_none_rounded,
+                    iconColor: AppColors.success,
+                    bgColor: AppColors.success.withOpacity(0.1),
+                    onTap: _showNotificationsDialog,
+                    cardColor: cardColor,
+                    textColor: textColor,
+                    isDark: isDark,
+                  ),
+                  _settingsTile(
+                    title: 'Privacy & Security',
+                    subtitle: 'Manage privacy and account security',
+                    icon: Icons.shield_outlined,
+                    iconColor: AppColors.success,
+                    bgColor: AppColors.success.withOpacity(0.1),
+                    onTap: () => _snack('Privacy & Security not yet implemented.'),
+                    cardColor: cardColor,
+                    textColor: textColor,
+                    isDark: isDark,
+                  ),
+
+                  const SizedBox(height: 24),
+                  Text('Preferences', style: GoogleFonts.inter(fontSize: 14, fontWeight: FontWeight.w600, color: Colors.grey.shade500)),
+                  const SizedBox(height: 12),
+                  _settingsTile(
+                    title: 'Food Preferences',
+                    subtitle: 'Vegetarian, Spicy food & more',
+                    icon: Icons.restaurant_menu_rounded,
+                    iconColor: AppColors.success,
+                    bgColor: AppColors.success.withOpacity(0.1),
+                    onTap: () => _snack('Food Preferences updated locally.'),
+                    cardColor: cardColor,
+                    textColor: textColor,
+                    isDark: isDark,
+                  ),
+                  _settingsTile(
+                    title: 'Allergies',
+                    subtitle: 'Manage your food allergies',
+                    icon: Icons.health_and_safety_outlined,
+                    iconColor: AppColors.success,
+                    bgColor: AppColors.success.withOpacity(0.1),
+                    onTap: () => _snack('Allergies updated locally.'),
+                    cardColor: cardColor,
+                    textColor: textColor,
+                    isDark: isDark,
+                  ),
+                  
+                  const SizedBox(height: 24),
+                  Text('App Settings', style: GoogleFonts.inter(fontSize: 14, fontWeight: FontWeight.w600, color: Colors.grey.shade500)),
+                  const SizedBox(height: 12),
+                  _settingsTile(
+                    title: 'Theme',
+                    subtitle: isDark ? 'Dark Mode Active' : 'Light Mode Active',
+                    icon: isDark ? Icons.dark_mode_rounded : Icons.light_mode_rounded,
+                    iconColor: Colors.blueAccent,
+                    bgColor: Colors.blueAccent.withOpacity(0.1),
+                    onTap: () => themeProvider.toggleTheme(!isDark),
+                    cardColor: cardColor,
+                    textColor: textColor,
+                    isDark: isDark,
+                  ),
+
+                  const SizedBox(height: 24),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF1B4332).withOpacity(0.06),
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(color: const Color(0xFF1B4332).withOpacity(0.1)),
+                    ),
+                    child: Row(
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.all(8),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFF1B4332).withOpacity(0.15),
+                            shape: BoxShape.circle,
+                          ),
+                          child: const Icon(Icons.security_rounded, color: Color(0xFF1B4332), size: 20),
+                        ),
+                        const SizedBox(width: 16),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text('Your account is secure', style: GoogleFonts.inter(fontSize: 14, fontWeight: FontWeight.w700, color: isDark ? AppColors.success : const Color(0xFF0F201A))),
+                              const SizedBox(height: 2),
+                              Text('We keep your data safe and private.', style: GoogleFonts.inter(fontSize: 13, color: isDark ? Colors.grey.shade400 : Colors.grey.shade600)),
+                            ],
+                          ),
+                        ),
+                        Icon(Icons.chevron_right_rounded, color: Colors.grey.shade400),
+                      ],
+                    ),
+                  ),
+
+                  const SizedBox(height: 16),
+                  InkWell(
+                    onTap: () {
+                      auth.logout();
+                      context.go('/auth');
+                    },
+                    borderRadius: BorderRadius.circular(12),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+                      decoration: BoxDecoration(
+                        color: cardColor,
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(color: isDark ? Colors.white12 : Colors.grey.shade200),
+                      ),
+                      child: Row(
+                        children: [
+                          const Icon(Icons.logout_rounded, color: Color(0xFFDC2626), size: 20),
+                          const SizedBox(width: 16),
+                          Expanded(
+                            child: Text('Logout', style: GoogleFonts.inter(fontSize: 14, fontWeight: FontWeight.w600, color: const Color(0xFFDC2626))),
+                          ),
+                          Icon(Icons.chevron_right_rounded, color: Colors.grey.shade400),
+                        ],
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 40),
                 ],
               ),
             ),
-
-            // Referral box
-            if (user?.referralCode != null)
-              Container(
-                margin: const EdgeInsets.fromLTRB(20, 0, 20, 20),
-                padding: const EdgeInsets.all(20),
-                decoration: BoxDecoration(
-                  color: theme.cardColor,
-                  borderRadius: BorderRadius.circular(20),
-                  border: Border.all(color: AppColors.primary),
-                ),
-                child: Column(
-                  children: [
-                    Text('YOUR REFERRAL CODE', style: GoogleFonts.outfit(fontWeight: FontWeight.w700, fontSize: 12, letterSpacing: 1, color: theme.colorScheme.onBackground.withOpacity(0.6))),
-                    const SizedBox(height: 8),
-                    Text(user!.referralCode!, style: GoogleFonts.outfit(fontSize: 32, fontWeight: FontWeight.w900, letterSpacing: 4, color: AppColors.primary)),
-                    const SizedBox(height: 4),
-                    Text('Share this code and you both get discounts!', style: theme.textTheme.bodySmall, textAlign: TextAlign.center),
-                    if (user.availableDiscounts.isNotEmpty) ...[
-                      const SizedBox(height: 8),
-                      Text('🎉 You have discounts at ${user.availableDiscounts.length} restaurant(s)!',
-                          style: GoogleFonts.inter(color: AppColors.success, fontWeight: FontWeight.w700)),
-                    ]
-                  ],
-                ),
-              ),
-
-            // Avatar picker
-            if (_showAvatarPicker)
-              Container(
-                margin: const EdgeInsets.fromLTRB(20, 0, 20, 20),
-                padding: const EdgeInsets.all(20),
-                decoration: BoxDecoration(color: theme.cardColor, borderRadius: BorderRadius.circular(20)),
-                child: Column(
-                  children: [
-                    Text('Choose Your Avatar', style: theme.textTheme.titleSmall),
-                    const SizedBox(height: 12),
-                    SingleChildScrollView(
-                      scrollDirection: Axis.horizontal,
-                      child: Row(
-                        children: List.generate(_avatarOptions.length, (i) => GestureDetector(
-                          onTap: () async {
-                            setState(() { _selectedAvatarIdx = i; _showAvatarPicker = false; });
-                            // Save immediately
-                            await auth.updateUser(auth.user!.copyWith(avatarUrl: _avatarOptions[i]));
-                          },
-                          child: Container(
-                            margin: const EdgeInsets.only(right: 10),
-                            decoration: BoxDecoration(
-                              shape: BoxShape.circle,
-                              border: Border.all(color: i == _selectedAvatarIdx ? AppColors.primary : Colors.transparent, width: 2),
-                            ),
-                            child: CircleAvatar(radius: 30, backgroundImage: NetworkImage(_avatarOptions[i])),
-                          ),
-                        )),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-
-            // Accordions
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20),
-              child: Column(children: [
-                _accordion('Profile', '👤', 'Manage Information', Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    TextField(controller: _nameCtrl, decoration: const InputDecoration(hintText: 'Full Name', prefixIcon: Icon(Icons.person_outline))),
-                    const SizedBox(height: 12),
-                    TextField(controller: _emailCtrl, decoration: const InputDecoration(hintText: 'Email', prefixIcon: Icon(Icons.email_outlined))),
-                    const SizedBox(height: 12),
-                    TextField(
-                      controller: _phoneCtrl,
-                      keyboardType: TextInputType.phone,
-                      decoration: const InputDecoration(
-                        hintText: 'Phone Number (e.g. +251912345678)',
-                        prefixIcon: Icon(Icons.phone_outlined),
-                      ),
-                    ),
-                    const SizedBox(height: 12),
-                    ElevatedButton(onPressed: _saveProfile, child: const Text('Save Profile Data')),
-                  ],
-                ), theme),
-
-                _accordion('Payment', '💳', 'Payment Methods', Column(
-                  children: [
-                    ..._paymentMethods.map((p) => ListTile(
-                          contentPadding: EdgeInsets.zero,
-                          title: Text('${p['type']} •••• ${p['last4']}', style: theme.textTheme.titleSmall),
-                          trailing: TextButton(
-                            onPressed: () => setState(() => _paymentMethods.removeWhere((m) => m['id'] == p['id'])),
-                            child: const Text('Remove', style: TextStyle(color: AppColors.errorRed)),
-                          ),
-                        )),
-                    const SizedBox(height: 8),
-                    OutlinedButton.icon(
-                      onPressed: () => setState(() => _paymentMethods.add({'id': DateTime.now().millisecondsSinceEpoch.toString(), 'type': 'Visa', 'last4': '9981'})),
-                      icon: const Icon(Icons.add),
-                      label: const Text('Add New Card'),
-                      style: OutlinedButton.styleFrom(foregroundColor: AppColors.primary),
-                    ),
-                  ],
-                ), theme),
-
-                _accordion('Addresses', '📍', 'Delivery Locations', Column(
-                  children: [
-                    TextField(controller: _addressCtrl, decoration: const InputDecoration(hintText: 'Street Address...')),
-                    const SizedBox(height: 12),
-                    ElevatedButton(onPressed: _saveProfile, child: const Text('Update Address')),
-                  ],
-                ), theme),
-
-                _accordion('Alerts', '🔔', 'App Notifications', Column(
-                  children: [
-                    _switchRow('Push Notifications', 'Stay updated on your orders', _pushEnabled, () async {
-                      setState(() => _pushEnabled = !_pushEnabled);
-                      // Save directly to avoid auth state refresh causing sign-out
-                      final uid = Supabase.instance.client.auth.currentUser?.id;
-                      if (uid != null) {
-                        await Supabase.instance.client.from('profiles')
-                            .update({'push_enabled': _pushEnabled}).eq('id', uid);
-                      }
-                    }, theme),
-                    _switchRow('Email Promos', 'Get exclusive deals', _emailPromos, () async {
-                      setState(() => _emailPromos = !_emailPromos);
-                      final uid = Supabase.instance.client.auth.currentUser?.id;
-                      if (uid != null) {
-                        await Supabase.instance.client.from('profiles')
-                            .update({'email_enabled': _emailPromos}).eq('id', uid);
-                      }
-                    }, theme),
-                  ],
-                ), theme),
-              ]),
-            ),
-
-            // App settings
-            Padding(
-              padding: const EdgeInsets.fromLTRB(20, 8, 20, 0),
-              child: Text('APP SETTINGS', style: GoogleFonts.outfit(fontSize: 12, fontWeight: FontWeight.w700, letterSpacing: 1, color: theme.colorScheme.onBackground.withOpacity(0.4))),
-            ),
-            const SizedBox(height: 10),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20),
-              child: GestureDetector(
-                onTap: () {
-                  final isDark = theme.brightness == Brightness.dark;
-                  themeProvider.toggleTheme(!isDark);
-                },
-                child: Container(
-                  padding: const EdgeInsets.all(18),
-                  decoration: BoxDecoration(color: theme.cardColor, borderRadius: BorderRadius.circular(16)),
-                  child: Center(
-                    child: Text(
-                      theme.brightness == Brightness.dark ? '☀️ Switch to Light Mode' : '🌙 Switch to Dark Mode',
-                      style: theme.textTheme.titleSmall,
-                    ),
-                  ),
-                ),
-              ),
-            ),
-            const SizedBox(height: 12),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20),
-              child: ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFFFEE2E2),
-                  foregroundColor: const Color(0xFFDC2626),
-                  elevation: 0,
-                ),
-                onPressed: () {
-                  auth.logout();
-                  context.go('/auth');
-                },
-                child: Text('Sign Out from Account', style: GoogleFonts.outfit(fontWeight: FontWeight.w800, color: const Color(0xFFDC2626))),
-              ),
-            ),
-            const SizedBox(height: 40),
           ],
         ),
       ),
     );
   }
 
-  Widget _switchRow(String title, String subtitle, bool value, VoidCallback onToggle, ThemeData theme) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 10),
-      child: Row(
-        children: [
-          Expanded(
-            child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-              Text(title, style: theme.textTheme.titleSmall),
-              Text(subtitle, style: theme.textTheme.bodySmall),
-            ]),
-          ),
-          Switch(value: value, onChanged: (_) => onToggle(), activeColor: AppColors.success),
-        ],
+  Widget _settingsTile({
+    required String title,
+    required String subtitle,
+    required IconData icon,
+    required Color iconColor,
+    required Color bgColor,
+    required VoidCallback onTap,
+    required Color cardColor,
+    required Color textColor,
+    required bool isDark,
+    bool isSelected = false,
+  }) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(12),
+      child: Container(
+        margin: const EdgeInsets.only(bottom: 12),
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: isSelected ? (isDark ? AppColors.primary.withOpacity(0.1) : const Color(0xFFFFF7ED)) : cardColor,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: isSelected ? AppColors.primary.withOpacity(0.3) : (isDark ? Colors.white12 : Colors.grey.shade200)),
+        ),
+        child: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(10),
+              decoration: BoxDecoration(color: bgColor, shape: BoxShape.circle),
+              child: Icon(icon, color: iconColor, size: 22),
+            ),
+            const SizedBox(width: 16),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(title, style: GoogleFonts.inter(fontSize: 15, fontWeight: FontWeight.w600, color: isSelected ? AppColors.primary : textColor)),
+                  const SizedBox(height: 2),
+                  Text(subtitle, style: GoogleFonts.inter(fontSize: 13, color: Colors.grey.shade500)),
+                ],
+              ),
+            ),
+            Icon(Icons.chevron_right_rounded, color: isSelected ? AppColors.primary : Colors.grey.shade400),
+          ],
+        ),
       ),
     );
   }

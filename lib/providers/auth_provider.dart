@@ -92,6 +92,67 @@ class AuthProvider extends ChangeNotifier {
     }
   }
 
+  // ─── OAuth Methods ────────────────────────────────────────────────────────
+  Future<bool> signInWithGoogle() async {
+    _isLoading = true;
+    _lastErrorMessage = null;
+    notifyListeners();
+    try {
+      await _supabase.auth.signInWithOAuth(
+        OAuthProvider.google,
+        redirectTo: kIsWeb ? null : 'saffroneats://login-callback/',
+      );
+      return true; // Note: For OAuth, true just means flow started successfully
+    } catch (e) {
+      _lastErrorMessage = _humanizeError(e);
+      debugPrint('❌ GOOGLE OAUTH ERROR: $e');
+      return false;
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+    }
+  }
+
+  Future<bool> signInWithFacebook() async {
+    _isLoading = true;
+    _lastErrorMessage = null;
+    notifyListeners();
+    try {
+      await _supabase.auth.signInWithOAuth(
+        OAuthProvider.facebook,
+        redirectTo: kIsWeb ? null : 'saffroneats://login-callback/',
+      );
+      return true;
+    } catch (e) {
+      _lastErrorMessage = _humanizeError(e);
+      debugPrint('❌ FACEBOOK OAUTH ERROR: $e');
+      return false;
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+    }
+  }
+
+  Future<bool> signInWithApple() async {
+    _isLoading = true;
+    _lastErrorMessage = null;
+    notifyListeners();
+    try {
+      await _supabase.auth.signInWithOAuth(
+        OAuthProvider.apple,
+        redirectTo: kIsWeb ? null : 'saffroneats://login-callback/',
+      );
+      return true;
+    } catch (e) {
+      _lastErrorMessage = _humanizeError(e);
+      debugPrint('❌ APPLE OAUTH ERROR: $e');
+      return false;
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+    }
+  }
+
   Future<bool> signUp({
     required String email,
     required String password,

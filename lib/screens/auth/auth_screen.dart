@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import '../../providers/auth_provider.dart';
 import '../../core/constants/app_colors.dart';
 
@@ -24,6 +25,7 @@ class _AuthScreenState extends State<AuthScreen> {
   final _addressCtrl = TextEditingController();
   final _referralCtrl = TextEditingController();
   bool _obscurePassword = true;
+  bool _rememberMe = false;
 
   @override
   void dispose() {
@@ -121,115 +123,89 @@ class _AuthScreenState extends State<AuthScreen> {
   // ── WEB LAYOUT — split panel ───────────────────────────────────────────────
   Widget _buildWebLayout(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF0F1117),
+      backgroundColor: Colors.white,
       body: Row(
         children: [
           // Left panel — brand side
           Expanded(
             child: Container(
-              decoration: const BoxDecoration(
-                gradient: LinearGradient(
-                  colors: [Color(0xFF0F1117), Color(0xFF162010)],
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                ),
-              ),
+              color: const Color(0xFF0F201A),
               child: Stack(
                 children: [
-                  // Decorative circles
-                  Positioned(top: -80, left: -80,
-                    child: Container(width: 320, height: 320,
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        color: AppColors.primary.withOpacity(0.07),
+                  // Food background image at the bottom
+                  Positioned(
+                    bottom: 0, left: 0, right: 0, top: 0,
+                    child: Align(
+                      alignment: Alignment.bottomCenter,
+                      child: FractionallySizedBox(
+                        heightFactor: 0.65,
+                        child: Container(
+                          decoration: const BoxDecoration(
+                            image: DecorationImage(
+                              image: NetworkImage('https://images.unsplash.com/photo-1563379091339-03b21ab4a4f8?q=80&w=800&auto=format&fit=crop'),
+                              fit: BoxFit.contain,
+                              alignment: Alignment.bottomCenter,
+                            ),
+                          ),
+                          child: Container(
+                            decoration: BoxDecoration(
+                              gradient: LinearGradient(
+                                begin: Alignment.topCenter,
+                                end: Alignment.bottomCenter,
+                                colors: [
+                                  const Color(0xFF0F201A),
+                                  const Color(0xFF0F201A).withOpacity(0.0),
+                                ],
+                                stops: const [0.0, 0.4],
+                              ),
+                            ),
+                          ),
+                        ),
                       ),
                     ),
                   ),
-                  Positioned(bottom: -60, right: -60,
-                    child: Container(width: 260, height: 260,
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        color: AppColors.primary.withOpacity(0.05),
-                      ),
-                    ),
-                  ),
+                  // Content
                   Padding(
                     padding: const EdgeInsets.all(56),
                     child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         // Logo
                         Row(
                           children: [
-                            Container(
-                              width: 48,
-                              height: 48,
-                              decoration: BoxDecoration(
-                                color: AppColors.primary,
-                                borderRadius: BorderRadius.circular(14),
-                              ),
-                              child: const Center(
-                                child: Icon(Icons.restaurant_rounded, color: Colors.white, size: 26),
-                              ),
-                            ),
-                            const SizedBox(width: 14),
+                            const Icon(Icons.restaurant_rounded, color: AppColors.primary, size: 28),
+                            const SizedBox(width: 12),
                             Text('SaffronEats',
                                 style: GoogleFonts.outfit(
-                                  fontSize: 28,
-                                  fontWeight: FontWeight.w900,
+                                  fontSize: 24,
+                                  fontWeight: FontWeight.w800,
                                   color: Colors.white,
                                 )),
                           ],
                         ).animate().fadeIn(duration: 600.ms),
                         const SizedBox(height: 64),
-                        Text(
-                          'Discover the best\nfood in Adama.',
-                          style: GoogleFonts.outfit(
-                            fontSize: 44,
-                            fontWeight: FontWeight.w900,
-                            color: Colors.white,
-                            height: 1.2,
-                          ),
-                        ).animate().fadeIn(delay: 150.ms).slideX(begin: -0.04),
-                        const SizedBox(height: 20),
-                        Text(
-                          'Order from top local restaurants with fast delivery,\nreal-time tracking, and digital payment receipts.',
-                          style: GoogleFonts.inter(
-                            fontSize: 16,
-                            color: Colors.white54,
-                            height: 1.7,
-                          ),
-                        ).animate().fadeIn(delay: 250.ms),
-                        const SizedBox(height: 48),
-                        // Feature bullets
-                        ...[
-                          ('Real-time order tracking', Icons.track_changes_rounded),
-                          ('Digital payment receipts', Icons.receipt_long_rounded),
-                          ('4 local restaurants', Icons.store_rounded),
-                          ('Fast 25–45 min delivery', Icons.delivery_dining_rounded),
-                        ].map((e) => Padding(
-                          padding: const EdgeInsets.only(bottom: 16),
-                          child: Row(
-                            children: [
-                              Container(
-                                width: 32, height: 32,
-                                decoration: BoxDecoration(
-                                  color: AppColors.primary.withOpacity(0.15),
-                                  borderRadius: BorderRadius.circular(8),
-                                ),
-                                child: Icon(e.$2, color: AppColors.primary, size: 17),
-                              ),
-                              const SizedBox(width: 14),
-                              Text(e.$1,
-                                  style: GoogleFonts.inter(
-                                    color: Colors.white70,
-                                    fontSize: 15,
-                                    fontWeight: FontWeight.w500,
-                                  )),
+                        RichText(
+                          text: TextSpan(
+                            style: GoogleFonts.outfit(fontSize: 56, fontWeight: FontWeight.w900, color: Colors.white, height: 1.2),
+                            children: const [
+                              TextSpan(text: 'Great food,\n'),
+                              TextSpan(text: 'delivered '),
+                              TextSpan(text: 'fast.', style: TextStyle(color: AppColors.primary)),
                             ],
                           ),
-                        ).animate().fadeIn(delay: 300.ms)),
+                        ).animate().fadeIn(delay: 150.ms).slideX(begin: -0.04),
+                        const SizedBox(height: 24),
+                        SizedBox(
+                          width: 400,
+                          child: Text(
+                            'Discover the best restaurants, order your favorites, and enjoy fast delivery at your doorstep.',
+                            style: GoogleFonts.inter(
+                              fontSize: 16,
+                              color: Colors.white.withOpacity(0.8),
+                              height: 1.6,
+                            ),
+                          ).animate().fadeIn(delay: 250.ms),
+                        ),
                       ],
                     ),
                   ),
@@ -239,116 +215,187 @@ class _AuthScreenState extends State<AuthScreen> {
           ),
 
           // Right panel — form side
-          Container(
-            width: 480,
-            color: const Color(0xFF080A0F),
-            child: Center(
+          Expanded(
+            child: Container(
+              color: const Color(0xFFFAFAFA),
               child: SingleChildScrollView(
-                padding: const EdgeInsets.symmetric(horizontal: 48, vertical: 40),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      _isSignUp ? 'Create your account' : 'Welcome back',
-                      style: GoogleFonts.outfit(
-                        fontSize: 30,
-                        fontWeight: FontWeight.w900,
-                        color: Colors.white,
-                      ),
-                    ).animate().fadeIn(),
-                    const SizedBox(height: 6),
-                    Text(
-                      _isSignUp
-                          ? 'Join SaffronEats and start ordering today.'
-                          : 'Sign in to continue to SaffronEats.',
-                      style: GoogleFonts.inter(color: Colors.white38, fontSize: 14),
-                    ).animate().fadeIn(delay: 100.ms),
-                    const SizedBox(height: 32),
-
-                    // Role toggle
-                    Container(
-                      padding: const EdgeInsets.all(4),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFF1C1F2A),
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: Row(children: [
-                        _roleBtn('customer', 'Order Food', Icons.shopping_bag_outlined),
-                        _roleBtn('restaurant', 'Partner Hub', Icons.store_outlined),
-                      ]),
-                    ).animate().fadeIn(delay: 150.ms),
-                    const SizedBox(height: 28),
-
-                    // Fields
-                    _webField(_emailCtrl, 'Email address', Icons.email_outlined, false),
-                    const SizedBox(height: 14),
-                    _webField(_passwordCtrl, 'Password', Icons.lock_outline, false,
-                        obscure: _obscurePassword,
-                        suffix: IconButton(
-                          icon: Icon(_obscurePassword ? Icons.visibility_off_outlined : Icons.visibility_outlined,
-                              color: Colors.white30, size: 18),
-                          onPressed: () => setState(() => _obscurePassword = !_obscurePassword),
-                        )),
-                    if (_role == 'customer' && _isSignUp) ...[
-                      const SizedBox(height: 14),
-                      _webField(_addressCtrl, 'Delivery Address', Icons.home_outlined, true),
-                      const SizedBox(height: 14),
-                      _webField(_referralCtrl, 'Referral Code (optional)', Icons.card_giftcard_rounded, true),
-                    ],
-                    const SizedBox(height: 28),
-
-                    // Submit button
-                    SizedBox(
-                      width: double.infinity,
-                      height: 52,
-                      child: ElevatedButton(
-                        onPressed: _isLoading ? null : _handleLogin,
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: AppColors.primary,
-                          foregroundColor: Colors.white,
-                          elevation: 0,
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                        ),
-                        child: _isLoading
-                            ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
-                            : Text(_isSignUp ? 'Create Account' : 'Sign In',
-                                style: GoogleFonts.outfit(fontWeight: FontWeight.w800, fontSize: 16)),
-                      ),
-                    ).animate().fadeIn(delay: 200.ms),
-                    const SizedBox(height: 20),
-                    Center(
-                      child: GestureDetector(
-                        onTap: () => setState(() => _isSignUp = !_isSignUp),
-                        child: RichText(
-                          text: TextSpan(children: [
-                            TextSpan(
-                              text: _isSignUp ? 'Already have an account? ' : "Don't have an account? ",
-                              style: GoogleFonts.inter(color: Colors.white38, fontSize: 14),
-                            ),
-                            TextSpan(
-                              text: _isSignUp ? 'Sign In' : 'Sign Up',
-                              style: GoogleFonts.inter(color: AppColors.primary, fontWeight: FontWeight.w700, fontSize: 14),
-                            ),
-                          ]),
+                child: Container(
+                  constraints: BoxConstraints(minHeight: MediaQuery.of(context).size.height),
+                  child: Column(
+                    children: [
+                      // Top right language
+                      Align(
+                        alignment: Alignment.topRight,
+                        child: Padding(
+                          padding: const EdgeInsets.all(32),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              const Icon(Icons.language_rounded, size: 18, color: Colors.black54),
+                              const SizedBox(width: 8),
+                              Text('English', style: GoogleFonts.inter(color: Colors.black87, fontWeight: FontWeight.w600, fontSize: 14)),
+                              const Icon(Icons.keyboard_arrow_down_rounded, size: 18, color: Colors.black54),
+                            ],
+                          ),
                         ),
                       ),
-                    ),
-                    if (_role == 'restaurant') ...[
-                      const SizedBox(height: 24),
+                      // Form Card
                       Center(
-                        child: GestureDetector(
-                          onTap: () => context.push('/owner/apply'),
-                          child: RichText(
-                            text: TextSpan(children: [
-                              TextSpan(text: 'New restaurant? ', style: GoogleFonts.inter(color: Colors.white38, fontSize: 13)),
-                              TextSpan(text: 'Apply to list your restaurant.',
-                                  style: GoogleFonts.inter(color: AppColors.primary, fontWeight: FontWeight.w700, fontSize: 13)),
+                        child: Padding(
+                          padding: const EdgeInsets.only(bottom: 40, left: 24, right: 24),
+                          child: Container(
+                            width: 460,
+                            padding: const EdgeInsets.all(40),
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(24),
+                              boxShadow: [
+                                BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 24, offset: const Offset(0, 8)),
+                              ],
+                              border: Border.all(color: Colors.grey.withOpacity(0.1)),
+                            ),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Center(
+                            child: Text(
+                              _isSignUp ? 'Create account!' : 'Welcome back!',
+                              style: GoogleFonts.outfit(fontSize: 32, fontWeight: FontWeight.w800, color: Colors.black),
+                            ).animate().fadeIn(),
+                          ),
+                          const SizedBox(height: 8),
+                          Center(
+                            child: Text(
+                              _isSignUp ? 'Sign up to get started' : 'Login to your account to continue',
+                              style: GoogleFonts.inter(color: Colors.grey.shade600, fontSize: 14),
+                            ).animate().fadeIn(delay: 100.ms),
+                          ),
+                          const SizedBox(height: 32),
+
+                          // Role toggle
+                          Container(
+                            padding: const EdgeInsets.all(4),
+                            decoration: BoxDecoration(
+                              color: Colors.grey.shade100,
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: Row(children: [
+                              _roleBtn('customer', 'Customer', Icons.person_outline_rounded),
+                              _roleBtn('restaurant', 'Restaurant Owner', Icons.store_outlined),
                             ]),
+                          ).animate().fadeIn(delay: 150.ms),
+                          const SizedBox(height: 32),
+
+                          // Fields
+                          Text('Email address', style: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.w600, color: Colors.black87)),
+                          const SizedBox(height: 8),
+                          _webField(_emailCtrl, 'Enter your email address', Icons.email_outlined, false),
+                          const SizedBox(height: 20),
+                          
+                          Text('Password', style: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.w600, color: Colors.black87)),
+                          const SizedBox(height: 8),
+                          _webField(_passwordCtrl, 'Enter your password', Icons.lock_outline, false,
+                              obscure: _obscurePassword,
+                              suffix: IconButton(
+                                icon: Icon(_obscurePassword ? Icons.visibility_off_outlined : Icons.visibility_outlined,
+                                    color: Colors.grey, size: 18),
+                                onPressed: () => setState(() => _obscurePassword = !_obscurePassword),
+                              )),
+                          
+                          if (_role == 'customer' && _isSignUp) ...[
+                            const SizedBox(height: 20),
+                            Text('Delivery Address', style: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.w600, color: Colors.black87)),
+                            const SizedBox(height: 8),
+                            _webField(_addressCtrl, 'Enter your home address', Icons.home_outlined, true),
+                          ],
+                          
+                          const SizedBox(height: 16),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              InkWell(
+                                onTap: () => setState(() => _rememberMe = !_rememberMe),
+                                borderRadius: BorderRadius.circular(4),
+                                child: Padding(
+                                  padding: const EdgeInsets.all(4.0),
+                                  child: Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      Icon(
+                                        _rememberMe ? Icons.check_box_rounded : Icons.check_box_outline_blank_rounded,
+                                        color: _rememberMe ? const Color(0xFF0F201A) : Colors.grey.shade400,
+                                        size: 20,
+                                      ),
+                                      const SizedBox(width: 8),
+                                      Text('Remember me', style: GoogleFonts.inter(color: Colors.grey.shade700, fontSize: 13)),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                              if (!_isSignUp)
+                                Text('Forgot password?', style: GoogleFonts.inter(color: AppColors.primary, fontSize: 13, fontWeight: FontWeight.w600)),
+                            ],
+                          ),
+                          const SizedBox(height: 32),
+
+                          // Submit button
+                          SizedBox(
+                            width: double.infinity,
+                            height: 48,
+                            child: ElevatedButton(
+                              onPressed: _isLoading ? null : _handleLogin,
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: AppColors.primary,
+                                foregroundColor: Colors.white,
+                                elevation: 0,
+                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                              ),
+                              child: _isLoading
+                                  ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
+                                  : Text(_isSignUp ? 'Sign Up' : 'Login',
+                                      style: GoogleFonts.outfit(fontWeight: FontWeight.w700, fontSize: 16)),
+                            ),
+                          ).animate().fadeIn(delay: 200.ms),
+                          const SizedBox(height: 24),
+
+                          Center(
+                            child: GestureDetector(
+                              onTap: () => setState(() => _isSignUp = !_isSignUp),
+                              child: RichText(
+                                text: TextSpan(children: [
+                                  TextSpan(
+                                    text: _isSignUp ? 'Already have an account? ' : "Don't have an account? ",
+                                    style: GoogleFonts.inter(color: Colors.grey.shade600, fontSize: 13),
+                                  ),
+                                  TextSpan(
+                                    text: _isSignUp ? 'Login' : 'Sign up',
+                                    style: GoogleFonts.inter(color: AppColors.primary, fontWeight: FontWeight.w700, fontSize: 13),
+                                  ),
+                                ]),
+                              ),
+                            ),
+                          ),
+                          
+                          const SizedBox(height: 32),
+                          Center(
+                            child: RichText(
+                              textAlign: TextAlign.center,
+                              text: TextSpan(children: [
+                                TextSpan(text: 'By continuing, you agree to our ', style: GoogleFonts.inter(color: Colors.grey.shade500, fontSize: 11)),
+                                TextSpan(text: 'Terms of Service', style: GoogleFonts.inter(color: AppColors.primary, fontSize: 11)),
+                                TextSpan(text: ' and ', style: GoogleFonts.inter(color: Colors.grey.shade500, fontSize: 11)),
+                                TextSpan(text: 'Privacy Policy', style: GoogleFonts.inter(color: AppColors.primary, fontSize: 11)),
+                                TextSpan(text: '.', style: GoogleFonts.inter(color: Colors.grey.shade500, fontSize: 11)),
+                              ]),
+                            ),
+                          ),
+                        ],
+                            ),
                           ),
                         ),
                       ),
                     ],
-                  ],
+                  ),
                 ),
               ),
             ),
@@ -365,21 +412,22 @@ class _AuthScreenState extends State<AuthScreen> {
         onTap: () => setState(() => _role = role),
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 200),
-          padding: const EdgeInsets.symmetric(vertical: 11),
+          padding: const EdgeInsets.symmetric(vertical: 10),
           decoration: BoxDecoration(
-            color: isActive ? AppColors.primary : Colors.transparent,
+            color: isActive ? const Color(0xFF0F201A) : Colors.transparent,
             borderRadius: BorderRadius.circular(8),
+            boxShadow: isActive ? [BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 4, offset: const Offset(0, 2))] : null,
           ),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(icon, size: 16, color: isActive ? Colors.white : Colors.white38),
+              Icon(icon, size: 16, color: isActive ? Colors.white : Colors.black87),
               const SizedBox(width: 8),
               Text(label,
-                  style: GoogleFonts.outfit(
-                    fontWeight: FontWeight.w700,
-                    fontSize: 14,
-                    color: isActive ? Colors.white : Colors.white38,
+                  style: GoogleFonts.inter(
+                    fontWeight: isActive ? FontWeight.w600 : FontWeight.w500,
+                    fontSize: 13,
+                    color: isActive ? Colors.white : Colors.black87,
                   )),
             ],
           ),
@@ -394,23 +442,51 @@ class _AuthScreenState extends State<AuthScreen> {
       controller: ctrl,
       obscureText: obscure,
       autocorrect: false,
-      style: const TextStyle(color: Colors.white, fontSize: 15),
+      style: GoogleFonts.inter(color: Colors.black87, fontSize: 14),
       decoration: InputDecoration(
         hintText: hint,
-        hintStyle: const TextStyle(color: Colors.white30),
-        prefixIcon: Icon(icon, color: Colors.white30, size: 18),
+        hintStyle: GoogleFonts.inter(color: Colors.grey.shade400, fontSize: 14),
+        prefixIcon: Icon(icon, color: Colors.grey.shade400, size: 18),
         suffixIcon: suffix,
         filled: true,
-        fillColor: const Color(0xFF1C1F2A),
+        fillColor: Colors.white,
         border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide.none,
+          borderRadius: BorderRadius.circular(10),
+          borderSide: BorderSide(color: Colors.grey.shade300),
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(10),
+          borderSide: BorderSide(color: Colors.grey.shade300),
         ),
         focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(10),
           borderSide: const BorderSide(color: AppColors.primary, width: 1.5),
         ),
-        contentPadding: const EdgeInsets.symmetric(vertical: 16, horizontal: 16),
+        contentPadding: const EdgeInsets.symmetric(vertical: 14, horizontal: 16),
+      ),
+    );
+  }
+
+  Widget _socialBtn(String name, IconData iconData, Color iconColor, VoidCallback onTap) {
+    return Expanded(
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(8),
+        child: Container(
+          padding: const EdgeInsets.symmetric(vertical: 10),
+          decoration: BoxDecoration(
+            border: Border.all(color: Colors.grey.shade300),
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              FaIcon(iconData, size: 15, color: iconColor),
+              const SizedBox(width: 8),
+              Text(name, style: GoogleFonts.inter(color: Colors.black87, fontSize: 13, fontWeight: FontWeight.w600)),
+            ],
+          ),
+        ),
       ),
     );
   }
