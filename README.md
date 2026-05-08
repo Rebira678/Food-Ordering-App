@@ -1,6 +1,8 @@
 # 🥘 SaffronEats — Premium Food Delivery Platform
 
-The premium food ordering experience for Adama, built with Flutter and Supabase.
+**Final Project Submission**
+
+SaffronEats is a premium food ordering experience built with Flutter and Supabase. This repository contains the complete, production-ready source code for the platform, featuring a rich, high-fidelity UI and real-time backend synchronization.
 
 ## 🔑 Admin & Owner Credentials
 For testing purposes, please use the following accounts:
@@ -43,7 +45,13 @@ This platform connects **customers**, **restaurant owners**, and **superadmins**
 - **Network Health**: Dashboard tracking total restaurants, users, and platform revenue.
 - **Partner Vetting**: Review and approve new restaurant applications.
 - **Node Management**: Oversight of all restaurant nodes in the network.
+- **Premium Management Forms**: Beautifully designed full-screen modals for adding and managing restaurant data.
 
+### ✨ UI/UX Highlights
+- **Dynamic Theming**: Instant pure-white to pure-black Dark Mode toggle integrated directly into the profile settings.
+- **Aesthetic Excellence**: Features a sophisticated Emerald Green (`#047857`) brand color carefully balanced as an accent color against monochromatic backgrounds to provide a professional, premium feel.
+- **Responsive Web & Mobile Layouts**: Interfaces intelligently adapt from mobile screens to wide web dashboard panels.
+- **Database Synchronization**: Profile settings (Name, Address, Notification Toggles) are wired directly to the Supabase backend with instant read/write capabilities.
 ---
 
 ## 🛠️ Tech Stack
