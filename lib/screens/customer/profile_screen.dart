@@ -548,7 +548,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
           ],
         ),
       ),
-    ));
+    ),
+  ),
+);
   }
 
   Widget _settingsTile({
