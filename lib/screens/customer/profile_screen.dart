@@ -78,19 +78,23 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   void _showEditProfileDialog() {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final dialogBg = isDark ? const Color(0xFF181818) : Colors.white;
+    final textColor = isDark ? Colors.white : Colors.black;
+
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        backgroundColor: Colors.white,
-        title: Text('Edit Profile', style: GoogleFonts.outfit(fontWeight: FontWeight.w700, color: Colors.black)),
+        backgroundColor: dialogBg,
+        title: Text('Edit Profile', style: GoogleFonts.outfit(fontWeight: FontWeight.w700, color: textColor)),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            TextField(controller: _nameCtrl, decoration: const InputDecoration(labelText: 'Full Name')),
+            _dialogTextField(_nameCtrl, 'Full Name', isDark),
             const SizedBox(height: 12),
-            TextField(controller: _emailCtrl, decoration: const InputDecoration(labelText: 'Email')),
+            _dialogTextField(_emailCtrl, 'Email', isDark),
             const SizedBox(height: 12),
-            TextField(controller: _phoneCtrl, decoration: const InputDecoration(labelText: 'Phone Number')),
+            _dialogTextField(_phoneCtrl, 'Phone Number', isDark),
           ],
         ),
         actions: [
@@ -105,13 +109,29 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
+  Widget _dialogTextField(TextEditingController ctrl, String label, bool isDark) {
+    return TextField(
+      controller: ctrl,
+      style: TextStyle(color: isDark ? Colors.white : Colors.black),
+      decoration: InputDecoration(
+        labelText: label,
+        labelStyle: TextStyle(color: isDark ? Colors.grey.shade400 : Colors.grey.shade700),
+        enabledBorder: UnderlineInputBorder(borderSide: BorderSide(color: isDark ? Colors.white24 : Colors.grey.shade400)),
+      ),
+    );
+  }
+
   void _showEditAddressDialog() {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final dialogBg = isDark ? const Color(0xFF181818) : Colors.white;
+    final textColor = isDark ? Colors.white : Colors.black;
+
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        backgroundColor: Colors.white,
-        title: Text('Edit Address', style: GoogleFonts.outfit(fontWeight: FontWeight.w700, color: Colors.black)),
-        content: TextField(controller: _addressCtrl, decoration: const InputDecoration(labelText: 'Delivery Address')),
+        backgroundColor: dialogBg,
+        title: Text('Edit Address', style: GoogleFonts.outfit(fontWeight: FontWeight.w700, color: textColor)),
+        content: _dialogTextField(_addressCtrl, 'Delivery Address', isDark),
         actions: [
           TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Cancel')),
           ElevatedButton(
@@ -125,23 +145,27 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   void _showNotificationsDialog() {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final dialogBg = isDark ? const Color(0xFF181818) : Colors.white;
+    final textColor = isDark ? Colors.white : Colors.black;
+
     showDialog(
       context: context,
       builder: (ctx) => StatefulBuilder(
         builder: (context, setDialogState) => AlertDialog(
-          backgroundColor: Colors.white,
-          title: Text('Notification Preferences', style: GoogleFonts.outfit(fontWeight: FontWeight.w700, color: Colors.black)),
+          backgroundColor: dialogBg,
+          title: Text('Notification Preferences', style: GoogleFonts.outfit(fontWeight: FontWeight.w700, color: textColor)),
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
               SwitchListTile(
-                title: Text('Push Notifications', style: GoogleFonts.inter(fontSize: 14)),
+                title: Text('Push Notifications', style: GoogleFonts.inter(fontSize: 14, color: textColor)),
                 value: _pushEnabled,
                 activeColor: AppColors.success,
                 onChanged: (v) { setDialogState(() => _pushEnabled = v); setState(() => _pushEnabled = v); },
               ),
               SwitchListTile(
-                title: Text('Email Promos', style: GoogleFonts.inter(fontSize: 14)),
+                title: Text('Email Promos', style: GoogleFonts.inter(fontSize: 14, color: textColor)),
                 value: _emailPromos,
                 activeColor: AppColors.success,
                 onChanged: (v) { setDialogState(() => _emailPromos = v); setState(() => _emailPromos = v); },
@@ -153,6 +177,54 @@ class _ProfileScreenState extends State<ProfileScreen> {
               style: ElevatedButton.styleFrom(backgroundColor: AppColors.primary, foregroundColor: Colors.white),
               onPressed: () { _saveProfile(); Navigator.pop(ctx); },
               child: const Text('Done'),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _showPaymentDialog() {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final dialogBg = isDark ? const Color(0xFF181818) : Colors.white;
+    final textColor = isDark ? Colors.white : Colors.black;
+    String selectedPayment = _paymentMethods.isNotEmpty ? _paymentMethods.first['type']! : 'Telebirr';
+
+    showDialog(
+      context: context,
+      builder: (ctx) => StatefulBuilder(
+        builder: (context, setDialogState) => AlertDialog(
+          backgroundColor: dialogBg,
+          title: Text('Payment Method', style: GoogleFonts.outfit(fontWeight: FontWeight.w700, color: textColor)),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              RadioListTile<String>(
+                title: Text('Telebirr', style: GoogleFonts.inter(color: textColor)),
+                value: 'Telebirr',
+                groupValue: selectedPayment,
+                activeColor: AppColors.primary,
+                onChanged: (v) => setDialogState(() => selectedPayment = v!),
+              ),
+              RadioListTile<String>(
+                title: Text('Commercial Bank of Ethiopia (CBE)', style: GoogleFonts.inter(color: textColor)),
+                value: 'CBE',
+                groupValue: selectedPayment,
+                activeColor: AppColors.primary,
+                onChanged: (v) => setDialogState(() => selectedPayment = v!),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Cancel')),
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(backgroundColor: AppColors.primary, foregroundColor: Colors.white),
+              onPressed: () {
+                setState(() => _paymentMethods = [{'id': '1', 'type': selectedPayment, 'last4': '****'}]);
+                _snack('✅ Payment Method Saved!');
+                Navigator.pop(ctx);
+              },
+              child: const Text('Save'),
             ),
           ],
         ),
@@ -183,16 +255,22 @@ class _ProfileScreenState extends State<ProfileScreen> {
     return Scaffold(
       backgroundColor: bgColor,
       body: SafeArea(
-        child: Column(
-          children: [
-            // Custom App Bar
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Icon(Icons.arrow_back_ios_new_rounded, size: 20, color: textColor),
-                  Row(
+        child: Center(
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 600),
+            child: Column(
+              children: [
+                // Custom App Bar
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      GestureDetector(
+                        onTap: () => context.go('/customer/home'),
+                        child: Icon(Icons.arrow_back_ios_new_rounded, size: 20, color: textColor),
+                      ),
+                      Row(
                     children: [
                       const Icon(Icons.restaurant_rounded, color: AppColors.primary, size: 24),
                       const SizedBox(width: 8),
@@ -330,11 +408,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   ),
                   _settingsTile(
                     title: 'Payment Methods',
-                    subtitle: 'View and manage payments',
+                    subtitle: _paymentMethods.isNotEmpty ? _paymentMethods.first['type']! : 'Telebirr',
                     icon: Icons.credit_card_outlined,
                     iconColor: AppColors.success,
                     bgColor: AppColors.success.withOpacity(0.1),
-                    onTap: () => _snack('Payment Methods not yet implemented.'),
+                    onTap: _showPaymentDialog,
                     cardColor: cardColor,
                     textColor: textColor,
                     isDark: isDark,
@@ -470,7 +548,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
           ],
         ),
       ),
-    );
+    ));
   }
 
   Widget _settingsTile({
