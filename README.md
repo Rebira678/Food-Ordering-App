@@ -4,24 +4,41 @@
 
 SaffronEats is a premium food ordering experience built with Flutter and Supabase. This repository contains the complete, production-ready source code for the platform, featuring a rich, high-fidelity UI and real-time backend synchronization.
 
-## 🔑 Admin & Owner Credentials
-For testing purposes, please use the following accounts:
+## 🔑 Demo Credentials
 
-Role	                    Email	                        Password
-Admin	               admin@saffroneats.com	           password123
-Kenbon Owner	      kenbon@saffroneats.com             password123
-YegnawBet Owner	   yegnawbet@saffroneats.com	        password123
-Gola Owner        	gola@saffroneats.com	              password123
-Marafa Owner	      marafa@saffroneats.com	           password123
+> [!TIP]
+> Use the following credentials to explore the different roles within the platform. All accounts use the default password: `password123`.
+
+| Role | Email Address | Password |
+| :--- | :--- | :--- |
+| **Superadmin** | `admin@saffroneats.com` | `password123` |
+| **Kenbon Owner** | `kenbon@saffroneats.com` | `password123` |
+| **YegnawBet Owner** | `yegnawbet@saffroneats.com` | `password123` |
+| **Gola Owner** | `gola@saffroneats.com` | `password123` |
+| **Marafa Owner** | `marafa@saffroneats.com` | `password123` |
+
 ---
 
 ## 📸 Screenshots
 
-> _The app features a vibrant "Saffron Orange" aesthetic with dark mode support._
+### 🌐 Website Preview
+<img src="assets/image.png" width="800" alt="Website Preview">
 
-| Customer App | Restaurant View | Cart & Checkout |
-|---|---|---|
-| ![Home](https://raw.githubusercontent.com/flutter/flutter/master/docs/images/logo.png) | ![Restaurant](https://raw.githubusercontent.com/flutter/flutter/master/docs/images/logo.png) | ![Cart](https://raw.githubusercontent.com/flutter/flutter/master/docs/images/logo.png) |
+---
+
+### 📱 Mobile Experience
+<p align="center">
+  <img src="assets/login page.jpg" width="250" alt="Login Screen">
+  <img src="assets/homepage.jpg" width="250" alt="Home Screen">
+  <img src="assets/Restorantowner_od.jpg" width="250" alt="Owner Dashboard">
+</p>
+
+<p align="center">
+  <img src="assets/profile.jpg" width="250" alt="User Profile">
+  <img src="assets/Home.jpg" width="250" alt="Customer Home">
+</p>
+
+
 
 ---
 
